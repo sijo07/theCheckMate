@@ -10,6 +10,11 @@ import errorHandler from "./middlewares/errorHandler.js";
 import rateLimiter from "./middlewares/rateLimiter.js";
 import userRoutes from "./routes/userRoutes.js";
 import incidentRoutes from "./routes/incidentRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
+import reportRoutes from "./routes/reportRoutes.js";
+import solutionRoutes from "./routes/solutionRoutes.js";
+import issueRoutes from "./routes/issueRoutes.js";
+import serviceRoutes from "./routes/serviceRoutes.js";
 import initializeSocket from "./config/socket.js";
 import fetchIncidents from "./utils/fetchIncidents.js";
 
@@ -32,15 +37,23 @@ connectDB()
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     app.use(cookieParser());
-    app.use(cors({ credentials: true }));
+    app.use(cors({ origin: "http://localhost:5173", credentials: true }));
     app.use(rateLimiter);
 
 
     configureMiddleware(app);
 
+    // Make io instance available to routes
+    app.set("io", io);
+
     // ✅ Routes
     app.use("/api/users", userRoutes);
     app.use("/incidents", incidentRoutes);
+    app.use("/api/notifications", notificationRoutes);
+    app.use("/api/reports", reportRoutes);
+    app.use("/api/solutions", solutionRoutes);
+    app.use("/api/issues", issueRoutes);
+    app.use("/api/services", serviceRoutes);
 
     // ✅ Start Fetching Incidents
     fetchIncidents(io);

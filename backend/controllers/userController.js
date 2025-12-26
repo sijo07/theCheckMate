@@ -59,6 +59,10 @@ const createUser = asyncHandler(async (req, res) => {
     return res.status(400).send("Phone number already exists");
   }
 
+  // Check if this is the first user
+  const userCount = await User.countDocuments();
+  const isFirstUser = userCount === 0;
+
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
   const profilePic = `https://picsum.photos/200?random=${Math.floor(
@@ -71,6 +75,7 @@ const createUser = asyncHandler(async (req, res) => {
     email,
     password: hashedPassword,
     profilePic,
+    isAdmin: isFirstUser, // First user becomes admin
   });
 
   try {

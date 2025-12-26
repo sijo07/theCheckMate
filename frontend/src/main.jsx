@@ -12,7 +12,7 @@ import {
 } from "react-router-dom";
 
 import PrivateRoute from "./components/PrivateRoute";
-import AdminRoute from "./pages/admin/adminRoute"; 
+import AdminRoute from "./pages/admin/adminRoute";
 
 // Lazy-loaded components
 const Login = lazy(() => import("./pages/auth/login.jsx"));
@@ -26,10 +26,20 @@ const MalwareDetail = lazy(() => import("./components/home/malwareDetail"));
 const FeatureDetails = lazy(() => import("./components/home/featureDetails"));
 const NotFound = lazy(() => import("./pages/notFound"));
 const Dashboard = lazy(() => import("./pages/admin/dashboard"));
+const ThreatIntelligence = lazy(() => import("./pages/ThreatIntelligence"));
+const Notifications = lazy(() => import("./pages/Notifications"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Reports = lazy(() => import("./pages/Reports"));
+const Solutions = lazy(() => import("./pages/Solutions"));
+const Issues = lazy(() => import("./pages/Issues"));
+const Services = lazy(() => import("./pages/Services"));
+
+
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path="/" element={<App />}>
+    <Route path="/" element={<App />} errorElement={<ErrorBoundary />}>
       <Route
         index
         element={
@@ -83,6 +93,64 @@ const router = createBrowserRouter(
         element={
           <Suspense fallback={<div>Loading...</div>}>
             <FeatureDetails />
+          </Suspense>
+        }
+      />
+
+      {/* New Feature Pages */}
+      <Route
+        path="threat-intelligence"
+        element={
+          <Suspense fallback={<div>Loading...</div>}>
+            <ThreatIntelligence />
+          </Suspense>
+        }
+      />
+      <Route
+        path="notifications"
+        element={
+          <Suspense fallback={<div>Loading...</div>}>
+            <Notifications />
+          </Suspense>
+        }
+      />
+      <Route
+        path="settings"
+        element={
+          <Suspense fallback={<div>Loading...</div>}>
+            <Settings />
+          </Suspense>
+        }
+      />
+      <Route
+        path="reports"
+        element={
+          <Suspense fallback={<div>Loading...</div>}>
+            <Reports />
+          </Suspense>
+        }
+      />
+      <Route
+        path="solutions"
+        element={
+          <Suspense fallback={<div>Loading...</div>}>
+            <Solutions />
+          </Suspense>
+        }
+      />
+      <Route
+        path="issues"
+        element={
+          <Suspense fallback={<div>Loading...</div>}>
+            <Issues />
+          </Suspense>
+        }
+      />
+      <Route
+        path="services"
+        element={
+          <Suspense fallback={<div>Loading...</div>}>
+            <Services />
           </Suspense>
         }
       />

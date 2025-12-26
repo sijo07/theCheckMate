@@ -1,13 +1,10 @@
-import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Bar, Pie } from "react-chartjs-2";
 import {
   Globe,
   Shield,
   Server,
-  Sun,
-  Moon,
   Activity,
 } from "lucide-react";
 import {
@@ -27,6 +24,7 @@ import {
 } from "../../redux/api/incidentApiSlice";
 import Loader from "../../components/loader";
 
+
 // Register Chart.js components
 ChartJS.register(
   CategoryScale,
@@ -39,23 +37,6 @@ ChartJS.register(
 );
 
 const Dashboard = () => {
-  // Initialize darkMode from localStorage or system preference
-  const [darkMode, setDarkMode] = useState(() => {
-    const savedMode = localStorage.getItem("darkMode");
-    if (savedMode !== null) return savedMode === "true";
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
-  });
-
-  // Set body class based on dark mode
-  useEffect(() => {
-    document.body.classList.toggle("dark", darkMode);
-    localStorage.setItem("darkMode", darkMode);
-  }, [darkMode]);
-
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
-
   const {
     data: incidents = [],
     isLoading: loadingIncidents,
@@ -88,79 +69,82 @@ const Dashboard = () => {
       icon: <Shield className="w-6 h-6" />,
       loading: loadingIncidents,
       error: errorIncidents,
-      color: "from-red-500 to-pink-600",
+      color: "rgba(239, 68, 68, 1)",
+      glow: "rgba(239, 68, 68, 0.4)",
     },
     {
-      title: "Targeted Industries",
+      title: "Targeted Sectors",
       value: topIndustries.length || 0,
       icon: <Server className="w-6 h-6" />,
       loading: loadingIndustries,
       error: errorIndustries,
-      color: "from-blue-500 to-indigo-600",
+      color: "rgba(59, 130, 246, 1)",
+      glow: "rgba(59, 130, 246, 0.4)",
     },
     {
-      title: "Targeted Countries",
+      title: "Active Nodes",
       value: topCountries.length || 0,
       icon: <Globe className="w-6 h-6" />,
       loading: loadingCountries,
       error: errorCountries,
-      color: "from-green-500 to-emerald-600",
+      color: "rgba(16, 185, 129, 1)",
+      glow: "rgba(16, 185, 129, 0.4)",
     },
     {
-      title: "High Severity",
+      title: "Severity Level",
       value: `${percentHighSeverity}%`,
       icon: <Activity className="w-6 h-6" />,
       loading: loadingIncidents,
       error: errorIncidents,
-      color: "from-amber-500 to-orange-600",
+      color: "rgba(245, 158, 11, 1)",
+      glow: "rgba(245, 158, 11, 0.4)",
     },
   ];
 
-  // Chart configurations with dynamic colors based on theme
-  const getChartColors = () => {
-    return {
-      countries: darkMode ? "#ef4444" : "#dc2626",
-      industries: darkMode ? "#3b82f6" : "#2563eb",
-      background: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.05)",
-      text: darkMode ? "#fff" : "#333",
-      grid: darkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
-      pieColors: [
-        "#FF6384",
-        "#36A2EB",
-        "#FFCE56",
-        "#4CAF50",
-        "#9966FF",
-        "#FF9F40",
-        "#8BC34A",
-        "#E91E63",
-        "#03A9F4",
-        "#9C27B0",
-      ],
-    };
+  // Cyber Chart Configurations
+  const cyberColors = {
+    primary: "#ef4444",
+    secondary: "#3b82f6",
+    accent: "#8b5cf6",
+    success: "#10b981",
+    warning: "#f59e0b",
+    text: "#9ca3af",
+    grid: "rgba(255, 255, 255, 0.05)",
+    glows: [
+      "rgba(239, 68, 68, 0.8)",
+      "rgba(59, 130, 246, 0.8)",
+      "rgba(139, 92, 246, 0.8)",
+      "rgba(16, 185, 129, 0.8)",
+      "rgba(245, 158, 11, 0.8)",
+    ],
   };
 
-  const colors = getChartColors();
-
   const barDataCountries = {
-    labels: topCountries.map((c) => c._id || "Unknown Country"),
+    labels: topCountries.map((c) => c._id || "Unknown"),
     datasets: [
       {
-        label: "Top Targeted Countries",
+        label: "ATTACK VOLUME BY NODE",
         data: topCountries.map((c) => c.count),
-        backgroundColor: colors.countries,
-        borderRadius: 6,
+        backgroundColor: cyberColors.primary,
+        borderColor: "rgba(239, 68, 68, 0.5)",
+        borderWidth: 1,
+        borderRadius: 4,
+        hoverBackgroundColor: "rgba(239, 68, 68, 0.8)",
       },
     ],
   };
 
   const barDataIndustries = {
-    labels: topIndustries.map((i) => i._id || "Unknown Industry"),
+    labels: topIndustries.map((i) => i._id || "Unknown"),
     datasets: [
       {
-        label: "Top Targeted Industries",
+        label: "SECTOR VULNERABILITY",
         data: topIndustries.map((i) => i.count),
-        backgroundColor: colors.industries,
-        borderRadius: 6,
+        backgroundColor: cyberColors.secondary,
+        borderColor: "rgba(59, 130, 246, 0.5)",
+        borderWidth: 1,
+        borderRadius: 4,
+        hoverBackgroundColor: "rgba(59, 130, 246, 0.8)",
       },
     ],
   };
@@ -171,59 +155,32 @@ const Dashboard = () => {
     plugins: {
       legend: {
         labels: {
-          color: colors.text,
-          font: {
-            family: "'Inter', sans-serif",
-            weight: "500",
-          },
+          color: "#fff",
+          font: { family: "monospace", size: 10, weight: "bold" },
         },
       },
       tooltip: {
-        backgroundColor: darkMode ? "#374151" : "#fff",
-        titleColor: darkMode ? "#fff" : "#111",
-        bodyColor: darkMode ? "#d1d5db" : "#333",
-        borderColor: darkMode ? "#4B5563" : "#e5e7eb",
+        backgroundColor: "#000",
+        titleFont: { family: "monospace", size: 12 },
+        bodyFont: { family: "monospace", size: 11 },
+        borderColor: "rgba(255, 255, 255, 0.1)",
         borderWidth: 1,
-        padding: 12,
-        cornerRadius: 8,
-        titleFont: {
-          family: "'Inter', sans-serif",
-          weight: "600",
-        },
-        bodyFont: {
-          family: "'Inter', sans-serif",
-        },
       },
     },
     scales: {
       x: {
-        grid: {
-          color: colors.grid,
-        },
-        ticks: {
-          color: colors.text,
-          font: {
-            family: "'Inter', sans-serif",
-          },
-        },
+        grid: { color: cyberColors.grid },
+        ticks: { color: cyberColors.text, font: { family: "monospace", size: 9 } },
       },
       y: {
-        grid: {
-          color: colors.grid,
-        },
-        ticks: {
-          color: colors.text,
-          font: {
-            family: "'Inter', sans-serif",
-          },
-        },
+        grid: { color: cyberColors.grid },
+        ticks: { color: cyberColors.text, font: { family: "monospace", size: 9 } },
       },
     },
   };
 
-  // Malware Types Chart Data
   const malwareCount = incidents.reduce((acc, incident) => {
-    const malwareType = incident.type || "General Threat";
+    const malwareType = incident.type || "General";
     acc[malwareType] = (acc[malwareType] || 0) + 1;
     return acc;
   }, {});
@@ -232,9 +189,17 @@ const Dashboard = () => {
     labels: Object.keys(malwareCount),
     datasets: [
       {
-        label: "Malware Types",
         data: Object.values(malwareCount),
-        backgroundColor: colors.pieColors,
+        backgroundColor: [
+          "#c43c3c", // Red
+          "#3a75c4", // Blue
+          "#715ac5", // Purple
+          "#1a9664", // Green
+          "#8b5cf6",
+        ],
+        borderColor: "#111111",
+        borderWidth: 2,
+        hoverOffset: 10,
       },
     ],
   };
@@ -246,197 +211,177 @@ const Dashboard = () => {
       legend: {
         position: "right",
         labels: {
-          color: colors.text,
+          color: "#fff",
+          usePointStyle: false,
+          boxWidth: 40,
+          boxHeight: 12,
           padding: 20,
-          font: {
-            family: "'Inter', sans-serif",
-            size: 12,
-          },
+          font: { family: "monospace", size: 9, weight: "900" },
         },
       },
       tooltip: {
-        backgroundColor: darkMode ? "#374151" : "#fff",
-        titleColor: darkMode ? "#fff" : "#111",
-        bodyColor: darkMode ? "#d1d5db" : "#333",
-        borderColor: darkMode ? "#4B5563" : "#e5e7eb",
-        borderWidth: 1,
-        padding: 12,
-        cornerRadius: 8,
-        titleFont: {
-          family: "'Inter', sans-serif",
-          weight: "600",
-        },
-        bodyFont: {
-          family: "'Inter', sans-serif",
-        },
-      },
-    },
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { type: "spring", stiffness: 100 },
-    },
-  };
-
-  const chartVariants = {
-    hidden: { opacity: 0, scale: 0.95 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: { duration: 0.5 },
+        backgroundColor: "#111",
+        titleFont: { family: "monospace" },
+        bodyFont: { family: "monospace" },
+        cornerRadius: 4,
+      }
     },
   };
 
   return (
-    <div
-      className={`${
-        darkMode ? "dark bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
-      } min-h-screen p-4 md:p-6 font-sans transition-colors duration-300`}
-    >
-      <div className="text-sm text-gray-400 pb-6 w-full max-w-5xl">
-        <Link to="/" className="hover:underline uppercase hover:font-semibold">
-          Home
-        </Link>
-        <span className="mx-2">/</span>
-        <span className="uppercase font-bold text-red-400">admin</span>
-        <span className="mx-2">/</span>
-        <span className="uppercase font-bold text-red-400">Dashboard</span>
-      </div>
-      <motion.div
-        className="max-w-7xl mx-auto"
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
-        <motion.div
-          className="flex justify-between items-center mb-8"
-          variants={itemVariants}
-        >
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-              Cybersecurity Dashboard
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">
-              Real-time threat intelligence and incident monitoring
-            </p>
-          </div>
-          <motion.button
-            onClick={toggleDarkMode}
-            className={`p-3 rounded-full ${
-              darkMode
-                ? "bg-gray-800 hover:bg-gray-700"
-                : "bg-white hover:bg-gray-100 shadow-md"
-            }`}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {darkMode ? (
-              <Sun className="w-5 h-5 text-yellow-400" />
-            ) : (
-              <Moon className="w-5 h-5 text-gray-700" />
-            )}
-          </motion.button>
-        </motion.div>
+    <div className="min-h-screen bg-[#09090b] text-white p-4 md:p-8 font-mono relative overflow-hidden">
+      {/* Breadcrumb */}
+      <nav className="relative z-10 max-w-7xl mx-auto mb-6 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-600">
+        <Link to="/" className="hover:text-red-500 transition-colors">HQ_HOME</Link>
+        <span>/</span>
+        <span className="text-red-500/50">ADMIN_CORE</span>
+        <span>/</span>
+        <span className="text-red-500">DASHBOARD_V4</span>
+      </nav>
 
-        <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
-          variants={containerVariants}
-        >
+      {/* HUD Header */}
+      <header className="relative z-10 max-w-7xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-end gap-6 border-b border-white/05 pb-8">
+        <div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-ping" />
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-red-500/70">Terminal Override: active</span>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none mb-2">
+            Cyber<span className="text-red-500">Dashboard</span>
+          </h1>
+          <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+            <Activity className="w-3 h-3" />
+            LIVE THREAT INTELLIGENCE STREAM // ROOT ACCESS GRANTED
+          </p>
+        </div>
+
+        <div className="flex gap-4">
+          <div className="px-4 py-2 bg-white/05 border border-white/10 rounded-lg text-right hidden sm:block">
+            <p className="text-[8px] text-gray-600 font-bold uppercase tracking-widest mb-1">System Uptime</p>
+            <p className="text-sm font-black text-red-500 tracking-tighter">99.982%</p>
+          </div>
+          <div className="px-4 py-2 bg-white/05 border border-white/10 rounded-lg text-right">
+            <p className="text-[8px] text-gray-600 font-bold uppercase tracking-widest mb-1">Node identifier</p>
+            <p className="text-sm font-black text-white tracking-tighter uppercase">CHK-MT-729</p>
+          </div>
+        </div>
+      </header>
+
+      <motion.div
+        className="max-w-7xl mx-auto relative z-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+      >
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           {stats.map((stat, index) => (
             <motion.div
               key={index}
-              className={`p-6 rounded-xl shadow-lg ${
-                darkMode ? "bg-gray-800" : "bg-white"
-              }`}
-              variants={itemVariants}
-              whileHover={{
-                y: -5,
-                transition: { type: "spring", stiffness: 300 },
-              }}
+              className="relative p-6 rounded-xl card-glass border border-white/05 group hover:border-red-500/30 transition-all overflow-hidden"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: index * 0.1 }}
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  {stat.loading ? (
-                    <Loader />
-                  ) : stat.error ? (
-                    <p className="text-red-500">Error loading {stat.title}</p>
-                  ) : (
-                    <>
-                      <p className="text-lg font-normal text-gray-500 dark:text-gray-400">
-                        {stat.title}
-                      </p>
-                      <p className="text-3xl font-bold tracking-tight mt-1">
-                        {stat.value}
-                      </p>
-                    </>
-                  )}
-                </div>
+              {/* Scanline effect on card */}
+              <div className="absolute top-0 left-0 w-full h-px bg-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.5)] -translate-y-[100%] group-hover:translate-y-[400%] transition-transform duration-1000 pointer-events-none" />
+
+              <div className="flex items-center justify-between mb-4">
                 <div
-                  className={`p-3 rounded-lg bg-gradient-to-br ${stat.color} text-white`}
+                  className="p-3 rounded-lg border border-white/10"
+                  style={{ backgroundColor: `${stat.color.replace('1)', '0.1)')}`, color: stat.color }}
                 >
                   {stat.icon}
                 </div>
+                <div className="text-right">
+                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{stat.title}</p>
+                  <p className="text-2xl font-black text-white tracking-tighter">
+                    {stat.loading ? "..." : stat.value}
+                  </p>
+                </div>
+              </div>
+
+              {/* Mini Sparkline Visualization (Placeholder) */}
+              <div className="h-1 bg-white/05 rounded-full overflow-hidden mt-2">
+                <motion.div
+                  className="h-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"
+                  initial={{ width: 0 }}
+                  animate={{ width: "70%" }}
+                  transition={{ duration: 2, delay: 1 }}
+                />
               </div>
             </motion.div>
           ))}
-        </motion.div>
+        </div>
 
-        <motion.div
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6"
-          variants={containerVariants}
-        >
+        {/* Main Charts Area */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
+          {/* Attack Volume Chart */}
           <motion.div
-            className={`p-4 md:p-6 rounded-xl shadow-lg ${
-              darkMode ? "bg-gray-800" : "bg-white"
-            } h-[400px]`}
-            variants={chartVariants}
+            className="lg:col-span-8 p-6 rounded-xl card-glass border border-white/05 relative overflow-hidden group"
+            initial={{ scale: 0.98, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.4 }}
           >
-            <h3 className="text-xl font-semibold mb-4">
-              Top Targeted Countries
-            </h3>
-            <Bar data={barDataCountries} options={barOptions} />
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white/50 flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                Inter-Node Threat Pulse
+              </h3>
+              <div className="flex gap-2">
+                <div className="w-2 h-2 border border-white/20" />
+                <div className="w-2 h-2 border border-white/20" />
+              </div>
+            </div>
+            <div className="h-[350px]">
+              <Bar data={barDataCountries} options={barOptions} />
+            </div>
           </motion.div>
+
+          {/* Sector Vulnerability Chart */}
           <motion.div
-            className={`p-4 md:p-6 rounded-xl shadow-lg ${
-              darkMode ? "bg-gray-800" : "bg-white"
-            } h-[400px]`}
-            variants={chartVariants}
+            className="lg:col-span-12 xl:col-span-4 p-12 rounded-3xl bg-[#222222] border border-white/05 relative overflow-hidden shadow-2xl"
+            initial={{ x: 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
           >
-            <h3 className="text-xl font-semibold mb-4">
-              Top Targeted Industries
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.4em] text-gray-400 mb-10 text-center">
+              Infrastructure Risk Profile
             </h3>
+            <div className="h-[350px] relative flex items-center justify-center">
+              <Pie data={malwareData} options={pieOptions} />
+              {/* Decorative HUD Circle Overlays */}
+              <div className="absolute inset-0 border-[30px] border-white/02 rounded-full pointer-events-none scale-[0.85] opacity-40 shadow-[inset_0_0_40px_rgba(0,0,0,0.5)]" />
+              <div className="absolute inset-0 border border-white/05 rounded-full pointer-events-none scale-95" />
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Bottom Section: Sector Vulnerability Table (Previously another bar chart) */}
+        <motion.div
+          className="p-6 rounded-xl card-glass border border-white/05 relative overflow-hidden"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.6 }}
+        >
+          <div className="flex justify-between items-center mb-8">
+            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white">
+              Secondary Sector Analysis
+            </h3>
+            <div className="h-0.5 flex-1 bg-gradient-to-r from-white/10 to-transparent mx-6" />
+          </div>
+          <div className="h-[300px]">
             <Bar data={barDataIndustries} options={barOptions} />
-          </motion.div>
-        </motion.div>
-
-        <motion.div
-          className={`p-4 md:p-6 rounded-xl shadow-lg ${
-            darkMode ? "bg-gray-800" : "bg-white"
-          } mt-6`}
-          variants={chartVariants}
-        >
-          <h3 className="text-xl font-semibold mb-4 text-center">
-            Malware Types Distribution
-          </h3>
-          <div className="p-4 rounded-lg h-[450px] flex justify-center items-center">
-            <Pie data={malwareData} options={pieOptions} />
           </div>
         </motion.div>
       </motion.div>
+
+      {/* Decorative Glitch Overlay (Subtle) */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.03] cyber-grid" />
+
+      {/* Background Glows */}
+      <div className="fixed top-[-10%] right-[-10%] w-1/2 h-1/2 bg-red-500/05 blur-[200px] pointer-events-none" />
+      <div className="fixed bottom-[-10%] left-[-10%] w-1/2 h-1/2 bg-blue-500/05 blur-[200px] pointer-events-none" />
     </div>
   );
 };
