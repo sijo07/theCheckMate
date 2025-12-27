@@ -1,26 +1,33 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { useSelector } from "react-redux";
-import AnimatedPage from "../components/AnimatedPage";
-import Navbar from "../components/Navbar";
-import {
-    User,
-    Bell,
-    Shield,
-    Palette,
-    Key,
-    Save,
-    Moon,
-    Sun,
-    Monitor,
-} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useSelector, useDispatch } from "react-redux";
+import { useLogoutMutation, useChangePasswordMutation } from "../redux/api/userApiSlice";
+import { logout } from "../redux/features/authSlice";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import {
+    Shield,
+    Cpu,
+    Terminal,
+    Activity,
+    Lock,
+    Download,
+    LogOut,
+    ToggleLeft,
+    ToggleRight
+} from "lucide-react";
 
 const Settings = () => {
     const { userInfo } = useSelector((state) => state.auth);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
-    const [activeTab, setActiveTab] = useState("profile");
-    const [theme, setTheme] = useState("dark");
+    const [logoutApiCall] = useLogoutMutation();
+    const [changePassword, { isLoading: isPasswordLoading }] = useChangePasswordMutation();
+
+    const [activeTab, setActiveTab] = useState("protocols");
+
+    // Notification State (Signal Protocols)
     const [notifications, setNotifications] = useState({
         email: true,
         push: true,
@@ -30,311 +37,268 @@ const Settings = () => {
         info: false,
     });
 
-    const tabs = [
-        { id: "profile", label: "Profile", icon: User },
-        { id: "notifications", label: "Notifications", icon: Bell },
-        { id: "security", label: "Security", icon: Shield },
-        { id: "appearance", label: "Appearance", icon: Palette },
-    ];
-
-    const handleSave = () => {
-        toast.success("Settings saved successfully!");
-    };
+    // Password State (Security Matrix)
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+    });
 
     const handleNotificationToggle = (key) => {
-        setNotifications({ ...notifications, [key]: !notifications[key] });
+        setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
+        toast.info(`PROTOCOL_${key.toUpperCase()}_${!notifications[key] ? 'ENGAGED' : 'TERMINATED'}`);
     };
 
+    const handlePasswordChange = async (e) => {
+        e.preventDefault();
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            toast.error("CIPHER_MISMATCH_DETECTED");
+            return;
+        }
+        try {
+            await changePassword({
+                _id: userInfo._id,
+                currentPassword: passwordData.currentPassword,
+                newPassword: passwordData.newPassword,
+                confirmPassword: passwordData.confirmPassword
+            }).unwrap();
+            toast.success("SECURITY_MATRIX_UPDATED");
+            setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+        } catch (err) {
+            toast.error(err?.data?.message || err.error);
+        }
+    };
+
+    const handleDataExport = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(userInfo, null, 2));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", `AGENT_${userInfo.username}_MANIFEST.json`);
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+        toast.success("MANIFEST_EXPORT_COMPLETE");
+    };
+
+    const handleLogout = async () => {
+        try {
+            await logoutApiCall().unwrap();
+            dispatch(logout());
+            navigate("/login");
+            toast.warning("CONNECTION_TERMINATED");
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const tabs = [
+        { id: "protocols", label: "Signal_Protocols", icon: Activity, desc: "Manage communication streams" },
+        { id: "security", label: "Security_Matrix", icon: Shield, desc: "Cipher & Access Controls" },
+        { id: "system", label: "System_Core", icon: Cpu, desc: "Advanced System Operations" },
+    ];
+
     return (
-        <AnimatedPage variant="fadeIn">
-            <Navbar />
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    {/* Header */}
-                    <motion.div
-                        className="mb-8"
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                    >
-                        <h1 className="text-4xl font-bold mb-2 text-gradient-cyber">
-                            Settings
-                        </h1>
-                        <p className="text-gray-400">
-                            Manage your account preferences and security
-                        </p>
-                    </motion.div>
+        <div className="min-h-screen bg-[#050506] text-white font-mono relative overflow-hidden flex items-center justify-center p-4">
+            {/* Background Cyber Grid */}
+            <div className="absolute inset-0 opacity-10 pointer-events-none"
+                style={{
+                    backgroundImage: 'linear-gradient(rgba(185, 28, 28, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(185, 28, 28, 0.1) 1px, transparent 1px)',
+                    backgroundSize: '40px 40px'
+                }}
+            />
+            {/* Scanning Line */}
+            <motion.div
+                className="absolute left-0 right-0 h-1 bg-red-600/10 z-0 pointer-events-none shadow-[0_0_20px_#ef4444]"
+                animate={{ top: ["0%", "100%"] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+            />
 
-                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                        {/* Sidebar Tabs */}
-                        <div className="lg:col-span-1">
-                            <div className="glass-dark rounded-xl p-4 space-y-2">
-                                {tabs.map((tab) => {
-                                    const Icon = tab.icon;
-                                    return (
-                                        <motion.button
-                                            key={tab.id}
-                                            onClick={() => setActiveTab(tab.id)}
-                                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === tab.id
-                                                    ? "bg-blue-500 text-white shadow-lg"
-                                                    : "text-gray-400 hover:bg-white/5 hover:text-white"
-                                                }`}
-                                            whileHover={{ x: 5 }}
-                                            whileTap={{ scale: 0.98 }}
-                                        >
-                                            <Icon className="w-5 h-5" />
-                                            <span className="font-medium">{tab.label}</span>
-                                        </motion.button>
-                                    );
-                                })}
-                            </div>
+            <div className="relative z-10 w-full max-w-6xl h-[80vh] grid grid-cols-1 md:grid-cols-12 gap-0 border border-red-900/30 bg-[#0a0a0b]/90 backdrop-blur-sm">
+
+                {/* Sidebar Navigation */}
+                <div className="md:col-span-3 border-r border-red-900/30 flex flex-col">
+                    <div className="p-6 border-b border-red-900/30 bg-red-900/5">
+                        <div className="flex items-center gap-3 text-red-500 mb-1">
+                            <Terminal className="w-5 h-5" />
+                            <span className="font-bold tracking-widest uppercase">Sys_Config</span>
                         </div>
+                        <div className="text-[10px] text-gray-500 uppercase tracking-widest pl-8">V.2.0.44</div>
+                    </div>
 
-                        {/* Content Area */}
-                        <div className="lg:col-span-3">
-                            <motion.div
-                                key={activeTab}
-                                className="glass-dark rounded-xl p-6"
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                {/* Profile Tab */}
-                                {activeTab === "profile" && (
-                                    <div className="space-y-6">
-                                        <h2 className="text-2xl font-bold mb-6">Profile Settings</h2>
-
-                                        <div className="flex items-center gap-6 mb-8">
-                                            <img
-                                                src={userInfo?.profilePic || `https://ui-avatars.com/api/?name=${userInfo?.username}`}
-                                                alt="Profile"
-                                                className="w-24 h-24 rounded-full border-4 border-blue-500"
-                                            />
-                                            <div>
-                                                <h3 className="text-xl font-semibold">{userInfo?.username}</h3>
-                                                <p className="text-gray-400">{userInfo?.email}</p>
-                                                <button className="mt-2 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-lg text-blue-400 transition-all text-sm">
-                                                    Change Photo
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-400 mb-2">
-                                                    Username
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    defaultValue={userInfo?.username}
-                                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-400 mb-2">
-                                                    Email
-                                                </label>
-                                                <input
-                                                    type="email"
-                                                    defaultValue={userInfo?.email}
-                                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-400 mb-2">
-                                                    Phone
-                                                </label>
-                                                <input
-                                                    type="tel"
-                                                    defaultValue={userInfo?.phone}
-                                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Notifications Tab */}
-                                {activeTab === "notifications" && (
-                                    <div className="space-y-6">
-                                        <h2 className="text-2xl font-bold mb-6">Notification Preferences</h2>
-
-                                        <div className="space-y-4">
-                                            <div>
-                                                <h3 className="text-lg font-semibold mb-4">Channels</h3>
-                                                <div className="space-y-3">
-                                                    {[
-                                                        { key: "email", label: "Email Notifications" },
-                                                        { key: "push", label: "Push Notifications" },
-                                                        { key: "sms", label: "SMS Notifications" },
-                                                    ].map((item) => (
-                                                        <div
-                                                            key={item.key}
-                                                            className="flex items-center justify-between p-4 bg-white/5 rounded-lg"
-                                                        >
-                                                            <span className="text-white">{item.label}</span>
-                                                            <button
-                                                                onClick={() => handleNotificationToggle(item.key)}
-                                                                className={`relative w-12 h-6 rounded-full transition-colors ${notifications[item.key]
-                                                                        ? "bg-blue-500"
-                                                                        : "bg-gray-600"
-                                                                    }`}
-                                                            >
-                                                                <motion.div
-                                                                    className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full"
-                                                                    animate={{
-                                                                        x: notifications[item.key] ? 24 : 0,
-                                                                    }}
-                                                                    transition={{ type: "spring", stiffness: 500 }}
-                                                                />
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <h3 className="text-lg font-semibold mb-4">Alert Types</h3>
-                                                <div className="space-y-3">
-                                                    {[
-                                                        { key: "critical", label: "Critical Threats" },
-                                                        { key: "warning", label: "Warnings" },
-                                                        { key: "info", label: "Informational" },
-                                                    ].map((item) => (
-                                                        <div
-                                                            key={item.key}
-                                                            className="flex items-center justify-between p-4 bg-white/5 rounded-lg"
-                                                        >
-                                                            <span className="text-white">{item.label}</span>
-                                                            <button
-                                                                onClick={() => handleNotificationToggle(item.key)}
-                                                                className={`relative w-12 h-6 rounded-full transition-colors ${notifications[item.key]
-                                                                        ? "bg-blue-500"
-                                                                        : "bg-gray-600"
-                                                                    }`}
-                                                            >
-                                                                <motion.div
-                                                                    className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full"
-                                                                    animate={{
-                                                                        x: notifications[item.key] ? 24 : 0,
-                                                                    }}
-                                                                    transition={{ type: "spring", stiffness: 500 }}
-                                                                />
-                                                            </button>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Security Tab */}
-                                {activeTab === "security" && (
-                                    <div className="space-y-6">
-                                        <h2 className="text-2xl font-bold mb-6">Security Settings</h2>
-
-                                        <div className="space-y-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-400 mb-2">
-                                                    Current Password
-                                                </label>
-                                                <input
-                                                    type="password"
-                                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-400 mb-2">
-                                                    New Password
-                                                </label>
-                                                <input
-                                                    type="password"
-                                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-400 mb-2">
-                                                    Confirm New Password
-                                                </label>
-                                                <input
-                                                    type="password"
-                                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                />
-                                            </div>
-
-                                            <div className="pt-4 border-t border-white/10">
-                                                <h3 className="text-lg font-semibold mb-4">Two-Factor Authentication</h3>
-                                                <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
-                                                    <div>
-                                                        <p className="text-white font-medium">Enable 2FA</p>
-                                                        <p className="text-sm text-gray-400">Add an extra layer of security</p>
-                                                    </div>
-                                                    <button className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-white transition-colors">
-                                                        Enable
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Appearance Tab */}
-                                {activeTab === "appearance" && (
-                                    <div className="space-y-6">
-                                        <h2 className="text-2xl font-bold mb-6">Appearance Settings</h2>
-
+                    <div className="flex-1 p-2 space-y-1 overflow-y-auto custom-scrollbar">
+                        {tabs.map((tab) => {
+                            const Icon = tab.icon;
+                            const isActive = activeTab === tab.id;
+                            return (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`w-full text-left p-4 group relative overflow-hidden transition-all ${isActive ? "bg-red-900/20 text-white" : "text-gray-500 hover:text-red-400 hover:bg-red-900/5"
+                                        }`}
+                                >
+                                    {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-600" />}
+                                    <div className="flex items-center gap-3 relative z-10">
+                                        <Icon className={`w-5 h-5 ${isActive ? "text-red-500" : "text-gray-600"}`} />
                                         <div>
-                                            <h3 className="text-lg font-semibold mb-4">Theme</h3>
-                                            <div className="grid grid-cols-3 gap-4">
-                                                {[
-                                                    { value: "light", label: "Light", icon: Sun },
-                                                    { value: "dark", label: "Dark", icon: Moon },
-                                                    { value: "auto", label: "Auto", icon: Monitor },
-                                                ].map((themeOption) => {
-                                                    const Icon = themeOption.icon;
-                                                    return (
-                                                        <motion.button
-                                                            key={themeOption.value}
-                                                            onClick={() => setTheme(themeOption.value)}
-                                                            className={`p-6 rounded-xl border-2 transition-all ${theme === themeOption.value
-                                                                    ? "border-blue-500 bg-blue-500/10"
-                                                                    : "border-white/10 bg-white/5 hover:border-white/20"
-                                                                }`}
-                                                            whileHover={{ scale: 1.05 }}
-                                                            whileTap={{ scale: 0.95 }}
-                                                        >
-                                                            <Icon className="w-8 h-8 mx-auto mb-2" />
-                                                            <p className="text-sm font-medium">{themeOption.label}</p>
-                                                        </motion.button>
-                                                    );
-                                                })}
-                                            </div>
+                                            <div className="text-sm font-bold uppercase tracking-wider">{tab.label}</div>
+                                            <div className="text-[10px] opacity-60 hidden md:block">{tab.desc}</div>
                                         </div>
                                     </div>
-                                )}
-
-                                {/* Save Button */}
-                                <div className="flex justify-end mt-8 pt-6 border-t border-white/10">
-                                    <motion.button
-                                        onClick={handleSave}
-                                        className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium shadow-lg hover:shadow-blue-500/50 transition-all flex items-center gap-2"
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                    >
-                                        <Save className="w-5 h-5" />
-                                        Save Changes
-                                    </motion.button>
-                                </div>
-                            </motion.div>
-                        </div>
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
+
+                {/* Main Content Area */}
+                <div className="md:col-span-9 p-8 relative overflow-y-auto custom-scrollbar">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={activeTab}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                            className="h-full"
+                        >
+                            {/* Header */}
+                            <div className="mb-8 flex items-end gap-4 border-b border-red-900/20 pb-4">
+                                <h2 className="text-3xl font-black uppercase text-white tracking-widest">
+                                    {tabs.find(t => t.id === activeTab)?.label}
+                                </h2>
+                                <span className="text-red-500/50 font-mono text-xs mb-2">
+                                    // {tabs.find(t => t.id === activeTab)?.desc}
+                                </span>
+                            </div>
+
+                            {/* Signal Protocols (Notifications) */}
+                            {activeTab === "protocols" && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {Object.entries(notifications).map(([key, value]) => (
+                                        <div key={key} className="bg-white/05 border border-red-900/20 p-4 flex items-center justify-between group hover:border-red-500/30 transition-colors">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-2 h-2 rounded-full ${value ? 'bg-green-500 shadow-[0_0_10px_#22c55e]' : 'bg-red-900'}`} />
+                                                <span className="uppercase text-sm tracking-widest text-gray-300 group-hover:text-white transition-colors">
+                                                    {key}_Stream
+                                                </span>
+                                            </div>
+                                            <button
+                                                onClick={() => handleNotificationToggle(key)}
+                                                className="text-red-500 hover:text-red-400 transition-colors"
+                                            >
+                                                {value ? <ToggleRight className="w-8 h-8" /> : <ToggleLeft className="w-8 h-8 opacity-50" />}
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Security Matrix (Password) */}
+                            {activeTab === "security" && (
+                                <form onSubmit={handlePasswordChange} className="max-w-md space-y-6">
+                                    <div className="group">
+                                        <label className="text-[10px] text-red-500/70 uppercase tracking-wider mb-1 block">Current_Cipher</label>
+                                        <div className="relative">
+                                            <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-red-500 transition-colors" />
+                                            <input
+                                                type="password"
+                                                value={passwordData.currentPassword}
+                                                onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                                                className="w-full bg-transparent border-b border-red-900/30 py-2 pl-8 text-white font-mono focus:outline-none focus:border-red-500 transition-colors placeholder-gray-700"
+                                                placeholder="ENTER_CURRENT_CIPHER"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="group">
+                                        <label className="text-[10px] text-red-500/70 uppercase tracking-wider mb-1 block">New_Cipher_Protocol</label>
+                                        <div className="relative">
+                                            <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-red-500 transition-colors" />
+                                            <input
+                                                type="password"
+                                                value={passwordData.newPassword}
+                                                onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                                                className="w-full bg-transparent border-b border-red-900/30 py-2 pl-8 text-white font-mono focus:outline-none focus:border-red-500 transition-colors placeholder-gray-700"
+                                                placeholder="ENTER_NEW_CIPHER"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="group">
+                                        <label className="text-[10px] text-red-500/70 uppercase tracking-wider mb-1 block">Verify_Cipher_Protocol</label>
+                                        <div className="relative">
+                                            <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 group-focus-within:text-red-500 transition-colors" />
+                                            <input
+                                                type="password"
+                                                value={passwordData.confirmPassword}
+                                                onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                                                className="w-full bg-transparent border-b border-red-900/30 py-2 pl-8 text-white font-mono focus:outline-none focus:border-red-500 transition-colors placeholder-gray-700"
+                                                placeholder="CONFIRM_NEW_CIPHER"
+                                            />
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        disabled={isPasswordLoading}
+                                        className="w-full bg-red-900/20 border border-red-600 text-red-500 py-3 uppercase tracking-widest text-xs font-bold hover:bg-red-600 hover:text-white transition-all group relative overflow-hidden flex items-center justify-center gap-2"
+                                    >
+                                        <Shield className="w-4 h-4" />
+                                        {isPasswordLoading ? "ENCRYPTING..." : "UPDATE_SECURITY_MATRIX"}
+                                    </button>
+                                </form>
+                            )}
+
+                            {/* System Core (Advanced) */}
+                            {activeTab === "system" && (
+                                <div className="space-y-8">
+                                    <div className="bg-red-900/10 border border-red-900/30 p-6 relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-16 h-16 bg-red-600/10 rounded-bl-full" />
+                                        <h3 className="text-xl font-bold uppercase text-white mb-2 flex items-center gap-2">
+                                            <Download className="w-5 h-5 text-red-500" />
+                                            Data_Manifest_Export
+                                        </h3>
+                                        <p className="text-gray-400 text-sm mb-4 max-w-lg">
+                                            Extract a complete raw JSON dump of your current identity profile and system configurations.
+                                        </p>
+                                        <button
+                                            onClick={handleDataExport}
+                                            className="px-6 py-2 bg-white/05 hover:bg-white/10 border border-white/10 hover:border-white/30 text-xs font-bold uppercase tracking-widest transition-all"
+                                        >
+                                            Iniate_Download
+                                        </button>
+                                    </div>
+
+                                    <div className="border-t border-red-900/30 pt-8">
+                                        <h3 className="text-lg font-bold uppercase text-red-500 mb-4 flex items-center gap-2">
+                                            <Terminal className="w-5 h-5" />
+                                            System_Log_Stream
+                                        </h3>
+                                        <div className="h-48 bg-black/50 border border-red-900/20 p-4 font-mono text-xs text-green-500/70 overflow-y-auto custom-scrollbar space-y-1">
+                                            <div>[SYSTEM_INIT] Core Services Online...</div>
+                                            <div>[NET_CHECK] Connection Stable (Ping: 14ms)</div>
+                                            <div>[AUTH_VERIFY] Token Validated for User: {userInfo.username}</div>
+                                            <div className="text-yellow-500/70">[WARN] Legacy Protocol Detected in Sector 7</div>
+                                            <div>[SYNC] Cloud Database Synced</div>
+                                            <div>[SEC_AUDIT] Password Strength: OPTIMAL</div>
+                                            <div>[ENV] Mode: TACTICAL_DARK</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-8 flex justify-end">
+                                        <button
+                                            onClick={handleLogout}
+                                            className="px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-bold uppercase tracking-widest text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(220,38,38,0.4)] hover:shadow-[0_0_30px_rgba(220,38,38,0.6)] transition-all"
+                                        >
+                                            <LogOut className="w-4 h-4" />
+                                            Terminate_Session
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
             </div>
-        </AnimatedPage>
+        </div>
     );
 };
 

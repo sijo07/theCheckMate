@@ -41,8 +41,8 @@ const getIssueById = asyncHandler(async (req, res) => {
         .populate("comments.user", "username profilePic");
 
     if (!issue) {
-        res.status(404);
-        throw new Error("Issue not found");
+        res.status(404).json({ message: "QUERY_FAILED: ISSUE_RECORD_NOT_FOUND" });
+        return;
     }
 
     res.json(issue);
@@ -93,8 +93,8 @@ const updateIssue = asyncHandler(async (req, res) => {
     const issue = await Issue.findById(req.params.id);
 
     if (!issue) {
-        res.status(404);
-        throw new Error("Issue not found");
+        res.status(404).json({ message: "OVERRIDE_FAILED: ISSUE_RECORD_NOT_FOUND" });
+        return;
     }
 
     // Update fields
@@ -116,8 +116,8 @@ const assignIssue = asyncHandler(async (req, res) => {
     const issue = await Issue.findById(req.params.id);
 
     if (!issue) {
-        res.status(404);
-        throw new Error("Issue not found");
+        res.status(404).json({ message: "ASSIGNMENT_FAILED: ISSUE_RECORD_NOT_FOUND" });
+        return;
     }
 
     issue.assignedTo = userId;
@@ -142,8 +142,8 @@ const addComment = asyncHandler(async (req, res) => {
     const issue = await Issue.findById(req.params.id);
 
     if (!issue) {
-        res.status(404);
-        throw new Error("Issue not found");
+        res.status(404).json({ message: "COMLOG_FAILED: ISSUE_RECORD_NOT_FOUND" });
+        return;
     }
 
     issue.comments.push({
@@ -163,8 +163,8 @@ const resolveIssue = asyncHandler(async (req, res) => {
     const issue = await Issue.findById(req.params.id);
 
     if (!issue) {
-        res.status(404);
-        throw new Error("Issue not found");
+        res.status(404).json({ message: "RESOLUTION_FAILED: ISSUE_RECORD_NOT_FOUND" });
+        return;
     }
 
     issue.status = "resolved";
@@ -191,12 +191,12 @@ const deleteIssue = asyncHandler(async (req, res) => {
     const issue = await Issue.findById(req.params.id);
 
     if (!issue) {
-        res.status(404);
-        throw new Error("Issue not found");
+        res.status(404).json({ message: "PURGE_FAILED: ISSUE_RECORD_NOT_FOUND" });
+        return;
     }
 
     await Issue.deleteOne({ _id: req.params.id });
-    res.json({ message: "Issue deleted successfully" });
+    res.json({ message: "ISSUE_RECORDS_PURGED_SUCCESSFULLY" });
 });
 
 export {

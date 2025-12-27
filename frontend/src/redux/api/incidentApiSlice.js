@@ -1,43 +1,40 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { BASE_URL } from "../constants";
+import { apiSlice } from "./apiSlice";
+import { INCIDENTS_URL } from "../constants";
 
-export const incidentApiSlice = createApi({
-  reducerPath: "incidentApi",
-  baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
-  tagTypes: ["Incidents", "Industries", "TopCountries", "DailyAttacks"], 
+export const incidentApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAllIncidents: builder.query({
-      query: () => "/incidents",
+      query: () => INCIDENTS_URL,
       providesTags: ["Incidents"],
     }),
 
     getTopTargetedCountries: builder.query({
-      query: () => "/incidents/top-targeted-countries",
+      query: () => `${INCIDENTS_URL}/top-targeted-countries`,
       providesTags: ["TopCountries"],
     }),
 
     getTopTargetedIndustries: builder.query({
-      query: () => "/incidents/top-targeted-industries",
+      query: () => `${INCIDENTS_URL}/top-targeted-industries`,
       providesTags: (result) =>
         result && Array.isArray(result)
           ? [
-              ...result.map(({ industry }) => ({
-                type: "Industries",
-                id: industry,
-              })),
-              { type: "Industries", id: "LIST" },
-            ]
+            ...result.map(({ industry }) => ({
+              type: "Industries",
+              id: industry,
+            })),
+            { type: "Industries", id: "LIST" },
+          ]
           : [{ type: "Industries", id: "LIST" }],
     }),
 
     getAttacksOnThisDay: builder.query({
-      query: () => "/incidents/attacks-on-this-day",
+      query: () => `${INCIDENTS_URL}/attacks-on-this-day`,
       providesTags: ["DailyAttacks"],
     }),
 
     addNewIncident: builder.mutation({
       query: (newIncident) => ({
-        url: "/incidents",
+        url: INCIDENTS_URL,
         method: "POST",
         body: newIncident,
       }),
@@ -46,7 +43,7 @@ export const incidentApiSlice = createApi({
         "Industries",
         "TopCountries",
         "DailyAttacks",
-      ], 
+      ],
     }),
   }),
 });

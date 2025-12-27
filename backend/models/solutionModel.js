@@ -29,6 +29,10 @@ const solutionSchema = new mongoose.Schema(
             enum: ["critical", "high", "medium", "low"],
             default: "medium",
         },
+        location: {
+            type: String,
+            trim: true,
+        },
         relatedIncident: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Incident",

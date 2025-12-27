@@ -1,6 +1,5 @@
 import { apiSlice } from "./apiSlice";
-
-const SERVICES_URL = "/api/services";
+import { SERVICES_URL } from "../constants";
 
 export const serviceApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
@@ -12,11 +11,11 @@ export const serviceApiSlice = apiSlice.injectEndpoints({
                 if (search) params.append("search", search);
                 return `${SERVICES_URL}?${params.toString()}`;
             },
-            providesTags: ["Service"],
+            providesTags: ["Services"],
         }),
         getServiceById: builder.query({
             query: (id) => `${SERVICES_URL}/${id}`,
-            providesTags: (result, error, id) => [{ type: "Service", id }],
+            providesTags: (result, error, id) => [{ type: "Services", id }],
         }),
         createService: builder.mutation({
             query: (data) => ({
@@ -24,7 +23,7 @@ export const serviceApiSlice = apiSlice.injectEndpoints({
                 method: "POST",
                 body: data,
             }),
-            invalidatesTags: ["Service"],
+            invalidatesTags: ["Services"],
         }),
         updateService: builder.mutation({
             query: ({ id, ...data }) => ({
@@ -32,14 +31,14 @@ export const serviceApiSlice = apiSlice.injectEndpoints({
                 method: "PUT",
                 body: data,
             }),
-            invalidatesTags: (result, error, { id }) => [{ type: "Service", id }],
+            invalidatesTags: (result, error, { id }) => [{ type: "Services", id }],
         }),
         deleteService: builder.mutation({
             query: (id) => ({
                 url: `${SERVICES_URL}/${id}`,
                 method: "DELETE",
             }),
-            invalidatesTags: ["Service"],
+            invalidatesTags: ["Services"],
         }),
         getServiceRequests: builder.query({
             query: ({ status, urgency } = {}) => {
@@ -48,11 +47,11 @@ export const serviceApiSlice = apiSlice.injectEndpoints({
                 if (urgency) params.append("urgency", urgency);
                 return `${SERVICES_URL}/requests?${params.toString()}`;
             },
-            providesTags: ["ServiceRequest"],
+            providesTags: ["ServiceRequests"],
         }),
         getServiceRequestById: builder.query({
             query: (id) => `${SERVICES_URL}/requests/${id}`,
-            providesTags: (result, error, id) => [{ type: "ServiceRequest", id }],
+            providesTags: (result, error, id) => [{ type: "ServiceRequests", id }],
         }),
         createServiceRequest: builder.mutation({
             query: (data) => ({
@@ -60,7 +59,7 @@ export const serviceApiSlice = apiSlice.injectEndpoints({
                 method: "POST",
                 body: data,
             }),
-            invalidatesTags: ["ServiceRequest"],
+            invalidatesTags: ["ServiceRequests"],
         }),
         updateServiceRequest: builder.mutation({
             query: ({ id, ...data }) => ({
@@ -68,7 +67,7 @@ export const serviceApiSlice = apiSlice.injectEndpoints({
                 method: "PUT",
                 body: data,
             }),
-            invalidatesTags: (result, error, { id }) => [{ type: "ServiceRequest", id }],
+            invalidatesTags: (result, error, { id }) => [{ type: "ServiceRequests", id }],
         }),
         addNoteToRequest: builder.mutation({
             query: ({ id, text }) => ({
@@ -76,7 +75,7 @@ export const serviceApiSlice = apiSlice.injectEndpoints({
                 method: "POST",
                 body: { text },
             }),
-            invalidatesTags: (result, error, { id }) => [{ type: "ServiceRequest", id }],
+            invalidatesTags: (result, error, { id }) => [{ type: "ServiceRequests", id }],
         }),
         completeServiceRequest: builder.mutation({
             query: ({ id, ...data }) => ({
@@ -84,7 +83,7 @@ export const serviceApiSlice = apiSlice.injectEndpoints({
                 method: "PUT",
                 body: data,
             }),
-            invalidatesTags: (result, error, { id }) => [{ type: "ServiceRequest", id }],
+            invalidatesTags: (result, error, { id }) => [{ type: "ServiceRequests", id }],
         }),
     }),
 });

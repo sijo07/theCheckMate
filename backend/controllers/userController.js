@@ -51,12 +51,12 @@ const createUser = asyncHandler(async (req, res) => {
 
   const emailExists = await User.findOne({ email });
   if (emailExists) {
-    return res.status(400).send("Email already exists");
+    return res.status(400).json({ message: "EMAIL_RECORD_ALREADY_EXISTS" });
   }
 
   const phoneExists = await User.findOne({ phone });
   if (phoneExists) {
-    return res.status(400).send("Phone number already exists");
+    return res.status(400).json({ message: "PHONE_RECORD_ALREADY_EXISTS" });
   }
 
   // Check if this is the first user
@@ -65,7 +65,9 @@ const createUser = asyncHandler(async (req, res) => {
 
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
-  const profilePic = `https://picsum.photos/200?random=${Math.floor(
+
+  // Use provided profile picture or fallback to random
+  const profilePic = req.body.profilePic || `https://picsum.photos/200?random=${Math.floor(
     Math.random() * 1000
   )}`;
 
@@ -121,14 +123,14 @@ const loginUser = asyncHandler(async (req, res) => {
   const existingUser = await User.findOne({ email });
 
   if (!existingUser) {
-    res.status(401).send("Invalid email or password");
+    res.status(401).json({ message: "AUTHENTICATION_FAILURE: INVALID_CREDENTIALS" });
     return;
   }
 
   const isPasswordValid = await bcrypt.compare(password, existingUser.password);
 
   if (!isPasswordValid) {
-    res.status(401).send("Invalid email or password");
+    res.status(401).json({ message: "AUTHENTICATION_FAILURE: INVALID_CREDENTIALS" });
     return;
   }
 
@@ -139,6 +141,7 @@ const loginUser = asyncHandler(async (req, res) => {
     username: existingUser.username,
     phone: existingUser.phone,
     email: existingUser.email,
+    profilePic: existingUser.profilePic,
     isAdmin: existingUser.isAdmin,
   });
 });
@@ -161,7 +164,7 @@ const getCurrentUserProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
   if (!user) {
-    res.status(404).send("User not found.");
+    res.status(404).json({ message: "SUBJECT_RECORDS_NOT_FOUND" });
     return;
   }
 
@@ -180,13 +183,13 @@ const updateCurrentUserProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
   if (!user) {
-    return res.status(404).send("User not found");
+    return res.status(404).json({ message: "SUBJECT_PROTOCOL_ERROR: USER_NOT_FOUND" });
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
 
   if (!isPasswordValid) {
-    return res.status(401).send("Incorrect password");
+    return res.status(401).json({ message: "AUTHORIZATION_REFUSED: INCORRECT_PASSWORD" });
   }
 
   if (username) user.username = username;
@@ -194,7 +197,7 @@ const updateCurrentUserProfile = asyncHandler(async (req, res) => {
   if (phone) {
     const phoneExists = await User.findOne({ phone });
     if (phoneExists && phoneExists._id.toString() !== user._id.toString()) {
-      return res.status(400).send("Phone number already exists");
+      return res.status(400).json({ message: "CONFLIFT_DETECTED: PHONE_ALREADY_LINKED" });
     }
     user.phone = phone;
   }
@@ -202,9 +205,14 @@ const updateCurrentUserProfile = asyncHandler(async (req, res) => {
   if (email) {
     const emailExists = await User.findOne({ email });
     if (emailExists && emailExists._id.toString() !== user._id.toString()) {
-      return res.status(400).send("Email already exists");
+      return res.status(400).json({ message: "CONFLICT_DETECTED: EMAIL_ALREADY_LINKED" });
     }
     user.email = email;
+  }
+
+  // Handle Profile Picture Update
+  if (req.body.profilePic) {
+    user.profilePic = req.body.profilePic;
   }
 
   try {
@@ -215,9 +223,10 @@ const updateCurrentUserProfile = asyncHandler(async (req, res) => {
       phone: updatedUser.phone,
       email: updatedUser.email,
       isAdmin: updatedUser.isAdmin,
+      profilePic: updatedUser.profilePic,
     });
   } catch (error) {
-    res.status(500).send("Error updating user");
+    res.status(500).json({ message: "CRITICAL_ERROR: PROFILE_SYNCHRONIZATION_FAILED" });
   }
 });
 
@@ -262,12 +271,12 @@ const deleteUserById = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
 
   if (!user) {
-    res.status(404).send("User not found.");
+    res.status(404).json({ message: "SUBJECT_PURGE_ERROR: RECORD_NOT_FOUND" });
     return;
   }
 
   if (user.isAdmin) {
-    res.status(400).send("Cannot delete admin user");
+    res.status(400).json({ message: "PROTOCOL_VIOLATION: CANNOT_PURGE_ADMIN" });
     return;
   }
 
@@ -279,7 +288,7 @@ const getUserById = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id).select("-password");
 
   if (!user) {
-    res.status(404).send("User not found");
+    res.status(404).json({ message: "QUERY_FAILED: SUBJECT_NOT_FOUND" });
     return;
   }
 
@@ -294,7 +303,7 @@ const updateUserById = asyncHandler(async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).send("User not found");
+      return res.status(404).json({ message: "OVERRIDE_FAILED: SUBJECT_NOT_FOUND" });
     }
 
     user.username = username || user.username;

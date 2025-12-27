@@ -1,4 +1,4 @@
-import asyncHandler from "express-async-handler";
+import asyncHandler from "../middlewares/asyncHandler.js";
 import Report from "../models/reportModel.js";
 import Incident from "../models/incidentModel.js";
 
@@ -20,8 +20,8 @@ const getReportById = asyncHandler(async (req, res) => {
     const report = await Report.findById(req.params.id);
 
     if (!report) {
-        res.status(404);
-        throw new Error("Report not found");
+        res.status(404).json({ message: "QUERY_FAILED: REPORT_NOT_FOUND" });
+        return;
     }
 
     // Check if report belongs to user or user is admin
@@ -29,8 +29,8 @@ const getReportById = asyncHandler(async (req, res) => {
         report.user.toString() !== req.user._id.toString() &&
         !req.user.isAdmin
     ) {
-        res.status(403);
-        throw new Error("Not authorized to view this report");
+        res.status(403).json({ message: "ACCESS_DENIED: UNAUTHORIZED_DATA_REQUEST" });
+        return;
     }
 
     res.json(report);
@@ -44,8 +44,8 @@ const createReport = asyncHandler(async (req, res) => {
 
     // Validate date range
     if (!dateRange || !dateRange.start || !dateRange.end) {
-        res.status(400);
-        throw new Error("Date range is required");
+        res.status(400).json({ message: "VALIDATION_ERROR: TEMPORAL_PARAMETERS_REQUIRED" });
+        return;
     }
 
     const report = await Report.create({
@@ -72,19 +72,19 @@ const deleteReport = asyncHandler(async (req, res) => {
     const report = await Report.findById(req.params.id);
 
     if (!report) {
-        res.status(404);
-        throw new Error("Report not found");
+        res.status(404).json({ message: "PURGE_FAILED: REPORT_NOT_FOUND" });
+        return;
     }
 
     // Check if report belongs to user
     if (report.user.toString() !== req.user._id.toString()) {
-        res.status(403);
-        throw new Error("Not authorized to delete this report");
+        res.status(403).json({ message: "ACCESS_DENIED: UNAUTHORIZED_PURGE_REQUEST" });
+        return;
     }
 
     await report.deleteOne();
 
-    res.json({ message: "Report deleted" });
+    res.json({ message: "REPORT_PURGED_SUCCESSFULLY" });
 });
 
 // @desc    Get report data/preview
@@ -94,8 +94,8 @@ const getReportData = asyncHandler(async (req, res) => {
     const report = await Report.findById(req.params.id);
 
     if (!report) {
-        res.status(404);
-        throw new Error("Report not found");
+        res.status(404).json({ message: "QUERY_FAILED: REPORT_NOT_FOUND" });
+        return;
     }
 
     // Check if report belongs to user or user is admin
@@ -103,8 +103,8 @@ const getReportData = asyncHandler(async (req, res) => {
         report.user.toString() !== req.user._id.toString() &&
         !req.user.isAdmin
     ) {
-        res.status(403);
-        throw new Error("Not authorized to view this report");
+        res.status(403).json({ message: "ACCESS_DENIED: UNAUTHORIZED_DATA_REQUEST" });
+        return;
     }
 
     // Get incidents based on report filters

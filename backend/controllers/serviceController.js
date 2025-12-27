@@ -36,8 +36,8 @@ const getServiceById = asyncHandler(async (req, res) => {
     );
 
     if (!service) {
-        res.status(404);
-        throw new Error("Service not found");
+        res.status(404).json({ message: "QUERY_FAILED: SERVICE_RECORD_NOT_FOUND" });
+        return;
     }
 
     // Increment popularity
@@ -88,8 +88,8 @@ const updateService = asyncHandler(async (req, res) => {
     const service = await Service.findById(req.params.id);
 
     if (!service) {
-        res.status(404);
-        throw new Error("Service not found");
+        res.status(404).json({ message: "OVERRIDE_FAILED: SERVICE_RECORD_NOT_FOUND" });
+        return;
     }
 
     Object.keys(req.body).forEach((key) => {
@@ -107,12 +107,12 @@ const deleteService = asyncHandler(async (req, res) => {
     const service = await Service.findById(req.params.id);
 
     if (!service) {
-        res.status(404);
-        throw new Error("Service not found");
+        res.status(404).json({ message: "PURGE_FAILED: SERVICE_RECORD_NOT_FOUND" });
+        return;
     }
 
     await Service.deleteOne({ _id: req.params.id });
-    res.json({ message: "Service deleted successfully" });
+    res.json({ message: "SERVICE_RECORDS_PURGED_SUCCESSFULLY" });
 });
 
 // @desc    Get all service requests
@@ -150,14 +150,14 @@ const getServiceRequestById = asyncHandler(async (req, res) => {
         .populate("notes.user", "username profilePic");
 
     if (!request) {
-        res.status(404);
-        throw new Error("Service request not found");
+        res.status(404).json({ message: "QUERY_FAILED: SERVICE_REQUEST_NOT_FOUND" });
+        return;
     }
 
     // Authorization check
     if (!req.user.isAdmin && request.requestedBy._id.toString() !== req.user._id.toString()) {
-        res.status(403);
-        throw new Error("Not authorized to view this request");
+        res.status(403).json({ message: "ACCESS_DENIED: UNAUTHORIZED_REQUEST_ACCESS" });
+        return;
     }
 
     res.json(request);
@@ -204,8 +204,8 @@ const updateServiceRequest = asyncHandler(async (req, res) => {
     const request = await ServiceRequest.findById(req.params.id);
 
     if (!request) {
-        res.status(404);
-        throw new Error("Service request not found");
+        res.status(404).json({ message: "OVERRIDE_FAILED: SERVICE_REQUEST_NOT_FOUND" });
+        return;
     }
 
     Object.keys(req.body).forEach((key) => {
@@ -226,8 +226,8 @@ const addNoteToRequest = asyncHandler(async (req, res) => {
     const request = await ServiceRequest.findById(req.params.id);
 
     if (!request) {
-        res.status(404);
-        throw new Error("Service request not found");
+        res.status(404).json({ message: "COMLOG_FAILED: SERVICE_REQUEST_NOT_FOUND" });
+        return;
     }
 
     request.notes.push({
@@ -247,8 +247,8 @@ const completeServiceRequest = asyncHandler(async (req, res) => {
     const request = await ServiceRequest.findById(req.params.id);
 
     if (!request) {
-        res.status(404);
-        throw new Error("Service request not found");
+        res.status(404).json({ message: "RESOLUTION_FAILED: SERVICE_REQUEST_NOT_FOUND" });
+        return;
     }
 
     request.status = "completed";

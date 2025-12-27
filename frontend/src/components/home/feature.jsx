@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 
 const Feature = () => {
   return (
-    <section className="py-24 px-6 text-center w-full max-w-7xl mx-auto">
-      <div className="mb-20">
+    <section className="py-12 px-6 text-center w-full max-w-7xl mx-auto">
+      <div className="mb-12">
         <h2 className="text-[10px] font-black text-red-500 uppercase tracking-[0.5em] mb-4">
           Core Competitive Advantages
         </h2>
@@ -41,14 +41,14 @@ const Feature = () => {
           },
         ].map((item, index) => (
           <Link key={index} to={item.path} className="group">
-            <div className="relative p-12 h-full rounded-2xl bg-[#0d0d0e] border border-white/05 overflow-hidden transition-all duration-500 hover:border-red-500/30 shadow-[0_0_50px_rgba(0,0,0,0.3)]">
+            <div className="relative p-8 h-full rounded-2xl bg-[#0d0d0e] border border-white/05 overflow-hidden transition-all duration-500 hover:border-red-500/30 shadow-[0_0_50px_rgba(0,0,0,0.3)]">
               {/* Background Technical Pattern */}
               <div className="absolute inset-0 opacity-[0.02] pointer-events-none group-hover:opacity-[0.05] transition-opacity duration-700">
                 <div className="w-full h-full" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
               </div>
 
               {/* Top Meta Hub */}
-              <div className="flex justify-between items-start mb-12 relative z-10">
+              <div className="flex justify-between items-start mb-8 relative z-10">
                 <div className="flex flex-col items-start gap-1">
                   <span className="text-[8px] font-black text-gray-700 uppercase tracking-[0.3em] group-hover:text-red-500/50 transition-colors">Module Serial</span>
                   <span className="text-[10px] font-mono font-bold text-gray-500">{item.serial}</span>
@@ -57,7 +57,7 @@ const Feature = () => {
               </div>
 
               {/* Centered Icon with Technical Border */}
-              <div className="relative w-20 h-20 mx-auto mb-10 flex items-center justify-center">
+              <div className="relative w-20 h-20 mx-auto mb-8 flex items-center justify-center">
                 <div className="absolute inset-0 border border-white/10 rounded-full group-hover:scale-110 group-hover:border-red-500/20 transition-all duration-700" />
                 <div className="absolute inset-2 border border-white/05 rounded-full rotate-45 group-hover:rotate-180 transition-all duration-1000" />
                 <div className="text-4xl relative z-10 group-hover:scale-125 transition-transform duration-500">{item.icon}</div>

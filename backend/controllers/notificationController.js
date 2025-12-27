@@ -1,4 +1,4 @@
-import asyncHandler from "express-async-handler";
+import asyncHandler from "../middlewares/asyncHandler.js";
 import Notification from "../models/notificationModel.js";
 
 // @desc    Get all notifications for logged-in user
@@ -34,14 +34,14 @@ const getNotificationById = asyncHandler(async (req, res) => {
     );
 
     if (!notification) {
-        res.status(404);
-        throw new Error("Notification not found");
+        res.status(404).json({ message: "QUERY_FAILED: NOTIFICATION_NOT_FOUND" });
+        return;
     }
 
     // Check if notification belongs to user
     if (notification.user.toString() !== req.user._id.toString()) {
-        res.status(403);
-        throw new Error("Not authorized to view this notification");
+        res.status(403).json({ message: "ACCESS_DENIED: UNAUTHORIZED_NOTIFICATION_ACCESS" });
+        return;
     }
 
     res.json(notification);
@@ -77,14 +77,14 @@ const markAsRead = asyncHandler(async (req, res) => {
     const notification = await Notification.findById(req.params.id);
 
     if (!notification) {
-        res.status(404);
-        throw new Error("Notification not found");
+        res.status(404).json({ message: "OVERRIDE_FAILED: NOTIFICATION_NOT_FOUND" });
+        return;
     }
 
     // Check if notification belongs to user
     if (notification.user.toString() !== req.user._id.toString()) {
-        res.status(403);
-        throw new Error("Not authorized to update this notification");
+        res.status(403).json({ message: "ACCESS_DENIED: UNAUTHORIZED_PROTOCOL_OVERRIDE" });
+        return;
     }
 
     notification.read = true;
@@ -102,7 +102,7 @@ const markAllAsRead = asyncHandler(async (req, res) => {
         { read: true }
     );
 
-    res.json({ message: "All notifications marked as read" });
+    res.json({ message: "ALL_NOTIFICATIONS_MARKED_AS_READ" });
 });
 
 // @desc    Delete notification
@@ -112,19 +112,19 @@ const deleteNotification = asyncHandler(async (req, res) => {
     const notification = await Notification.findById(req.params.id);
 
     if (!notification) {
-        res.status(404);
-        throw new Error("Notification not found");
+        res.status(404).json({ message: "PURGE_FAILED: NOTIFICATION_NOT_FOUND" });
+        return;
     }
 
     // Check if notification belongs to user
     if (notification.user.toString() !== req.user._id.toString()) {
-        res.status(403);
-        throw new Error("Not authorized to delete this notification");
+        res.status(403).json({ message: "ACCESS_DENIED: UNAUTHORIZED_PURGE_REQUEST" });
+        return;
     }
 
     await notification.deleteOne();
 
-    res.json({ message: "Notification deleted" });
+    res.json({ message: "NOTIFICATION_PURGED_SUCCESSFULLY" });
 });
 
 // @desc    Get unread count

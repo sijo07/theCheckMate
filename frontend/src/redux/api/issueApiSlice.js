@@ -1,6 +1,5 @@
 import { apiSlice } from "./apiSlice";
-
-const ISSUES_URL = "/api/issues";
+import { ISSUES_URL } from "../constants";
 
 export const issueApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
@@ -14,11 +13,11 @@ export const issueApiSlice = apiSlice.injectEndpoints({
                 if (search) params.append("search", search);
                 return `${ISSUES_URL}?${params.toString()}`;
             },
-            providesTags: ["Issue"],
+            providesTags: ["Issues"],
         }),
         getIssueById: builder.query({
             query: (id) => `${ISSUES_URL}/${id}`,
-            providesTags: (result, error, id) => [{ type: "Issue", id }],
+            providesTags: (result, error, id) => [{ type: "Issues", id }],
         }),
         createIssue: builder.mutation({
             query: (data) => ({
@@ -26,7 +25,7 @@ export const issueApiSlice = apiSlice.injectEndpoints({
                 method: "POST",
                 body: data,
             }),
-            invalidatesTags: ["Issue"],
+            invalidatesTags: ["Issues"],
         }),
         updateIssue: builder.mutation({
             query: ({ id, ...data }) => ({
@@ -34,7 +33,7 @@ export const issueApiSlice = apiSlice.injectEndpoints({
                 method: "PUT",
                 body: data,
             }),
-            invalidatesTags: (result, error, { id }) => [{ type: "Issue", id }],
+            invalidatesTags: (result, error, { id }) => [{ type: "Issues", id }],
         }),
         assignIssue: builder.mutation({
             query: ({ id, userId }) => ({
@@ -42,7 +41,7 @@ export const issueApiSlice = apiSlice.injectEndpoints({
                 method: "PUT",
                 body: { userId },
             }),
-            invalidatesTags: (result, error, { id }) => [{ type: "Issue", id }],
+            invalidatesTags: (result, error, { id }) => [{ type: "Issues", id }],
         }),
         addComment: builder.mutation({
             query: ({ id, text }) => ({
@@ -50,7 +49,7 @@ export const issueApiSlice = apiSlice.injectEndpoints({
                 method: "POST",
                 body: { text },
             }),
-            invalidatesTags: (result, error, { id }) => [{ type: "Issue", id }],
+            invalidatesTags: (result, error, { id }) => [{ type: "Issues", id }],
         }),
         resolveIssue: builder.mutation({
             query: ({ id, ...data }) => ({
@@ -58,14 +57,14 @@ export const issueApiSlice = apiSlice.injectEndpoints({
                 method: "PUT",
                 body: data,
             }),
-            invalidatesTags: (result, error, { id }) => [{ type: "Issue", id }],
+            invalidatesTags: (result, error, { id }) => [{ type: "Issues", id }],
         }),
         deleteIssue: builder.mutation({
             query: (id) => ({
                 url: `${ISSUES_URL}/${id}`,
                 method: "DELETE",
             }),
-            invalidatesTags: ["Issue"],
+            invalidatesTags: ["Issues"],
         }),
     }),
 });

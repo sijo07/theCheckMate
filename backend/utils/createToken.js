@@ -6,14 +6,14 @@ const generateToken = (res, userId) => {
   });
 
   res.cookie("jwt", token, {
-    httpOnly: true, 
-    secure: process.env.NODE_ENV === "production", 
-    sameSite: "strict",
-    path: "/", 
-    maxAge: 30 * 24 * 60 * 60 * 1000, 
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "Lax",
+    path: "/",
+    maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 
-  console.log("✅ Token generated and cookie set:", token); 
+  console.log("✅ Token generated and cookie set:", token);
 
   return token;
 };

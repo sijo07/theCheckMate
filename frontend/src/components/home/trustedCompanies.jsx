@@ -18,8 +18,8 @@ const TrustedCompanies = () => {
   const duplicatedCompanies = [...companyNames, ...companyNames, ...companyNames];
 
   return (
-    <section className="py-24 w-full overflow-hidden bg-[#09090b]">
-      <div className="max-w-7xl mx-auto px-6 mb-16 text-center">
+    <section className="w-full overflow-hidden bg-[#09090b]">
+      <div className="max-w-7xl mx-auto px-6 mb-10 text-center">
         <h2 className="text-[10px] font-black text-red-500 uppercase tracking-[0.6em] mb-4">
           Strategic Alliances
         </h2>

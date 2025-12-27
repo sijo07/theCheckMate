@@ -13,7 +13,7 @@ const LiveMap = () => {
             <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-[#09090b] border border-white/10 shadow-[0_0_100px_rgba(239,68,68,0.05)] group">
                 {/* Cyber Map Background Image */}
                 <div
-                    className="absolute inset-0 opacity-[0.15] grayscale pointer-events-none"
+                    className="absolute inset-0 opacity-40 grayscale-[0.5] pointer-events-none"
                     style={{
                         backgroundImage: "url('/cyber-map.png')",
                         backgroundSize: 'cover',
@@ -22,7 +22,7 @@ const LiveMap = () => {
                 />
 
                 {/* Animated Background Grid */}
-                <div className="absolute inset-0 opacity-[0.1] pointer-events-none">
+                <div className="absolute inset-0 opacity-20 pointer-events-none">
                     <div className="w-full h-full" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
                 </div>
 
@@ -83,19 +83,19 @@ const LiveMap = () => {
                 </div>
 
                 {/* Central UI Hub */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-black/40 backdrop-blur-[2px]">
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-black/20 backdrop-blur-[1px]">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.5 }}
                     >
                         <span className="text-[10px] font-black text-red-500 uppercase tracking-[0.6em] mb-4 block">Tactical Visualization Overlay</span>
-                        <h1 className="text-4xl md:text-6xl font-black text-white mb-10 uppercase tracking-tighter leading-none">
+                        <h1 className="text-4xl md:text-6xl font-black text-white mb-6 uppercase tracking-tighter leading-none">
                             Global <span className="text-red-500">Sentinel</span> Core
                         </h1>
 
                         {/* Tactical Info Cards */}
-                        <div className="flex flex-wrap justify-center gap-6 mb-12">
+                        <div className="flex flex-wrap justify-center gap-6 mb-8">
                             {[
                                 { label: "Active Nodes", val: "14,802", color: "text-blue-400" },
                                 { label: "Threat Density", val: "CRITICAL", color: "text-red-500" },

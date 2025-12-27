@@ -92,53 +92,105 @@ const Home = () => {
 
           {/* Hero Image / Unique Visual */}
           <motion.div
-            className="relative"
+            className="relative flex items-center justify-center"
             initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
             transition={{ duration: 1, ease: "easeOut" }}
           >
-            <div className="relative z-10 w-full aspect-square md:aspect-video lg:aspect-square rounded-2xl overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(239,68,68,0.1)]">
+            {/* Main Circular Image Container */}
+            <div className="relative z-20 w-full max-w-[500px] aspect-square rounded-full overflow-hidden border-2 border-red-500/20 shadow-[0_0_80px_rgba(239,68,68,0.2)] bg-black">
               <img
                 src={heroImage}
                 alt="Cyber Defense Command Center"
-                className="w-full h-full object-cover opacity-80"
+                className="w-full h-full object-cover opacity-90 scale-110"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-transparent to-transparent opacity-60" />
-
-              {/* Floating UI Elements */}
-              <motion.div
-                className="absolute top-10 right-10 p-4 card-glass rounded-xl border border-white/10 backdrop-blur-md hidden md:block"
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 4, repeat: Infinity }}
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white/50">Core Status: Stable</span>
-                </div>
-                <div className="space-y-1">
-                  <div className="w-32 h-1 bg-white/10 rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full bg-red-500"
-                      initial={{ width: "0%" }}
-                      animate={{ width: "75%" }}
-                      transition={{ duration: 2, delay: 1 }}
-                    />
-                  </div>
-                  <div className="w-24 h-1 bg-white/10 rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full bg-red-400"
-                      initial={{ width: "0%" }}
-                      animate={{ width: "45%" }}
-                      transition={{ duration: 2, delay: 1.2 }}
-                    />
-                  </div>
-                </div>
-              </motion.div>
+              <div className="absolute inset-0 bg-gradient-to-t from-red-900/40 via-transparent to-transparent opacity-60" />
             </div>
 
-            {/* Decorative Rings */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] border border-red-500/05 rounded-full pointer-events-none" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] border border-white/05 rounded-full pointer-events-none" />
+            {/* CYBER RINGS INFRASTRUCTURE - Positioned outside the circle for visibility */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] pointer-events-none z-10 flex items-center justify-center">
+
+              {/* Outer Pulsing Glow */}
+              <motion.div
+                className="absolute inset-0 border border-red-500/10 rounded-full"
+                animate={{ scale: [1, 1.05, 1], opacity: [0.05, 0.15, 0.05] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              />
+
+              {/* Vibrant Conic Sweep - Multiple segments */}
+              <motion.div
+                className="absolute inset-[-5%] rounded-full opacity-60"
+                style={{
+                  background: 'conic-gradient(from 0deg, transparent 0deg, #ef4444 10deg, transparent 40deg, transparent 180deg, #ef4444 190deg, transparent 220deg)',
+                  maskImage: 'radial-gradient(transparent 68%, black 70%)',
+                  WebkitMaskImage: 'radial-gradient(transparent 68%, black 70%)'
+                }}
+                animate={{ rotate: 360 }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+              />
+
+              {/* High-Speed Glitch Tech Ring */}
+              <motion.div
+                className="absolute inset-[2%] border border-red-500/40 rounded-full"
+                animate={{
+                  rotate: -360,
+                  opacity: [0.1, 0.4, 0.2, 0.6, 0.1],
+                  scale: [1, 1.01, 0.99, 1]
+                }}
+                transition={{
+                  rotate: { duration: 20, repeat: Infinity, ease: "linear" },
+                  opacity: { duration: 0.1, repeat: Infinity, repeatType: "mirror" }
+                }}
+              />
+
+              {/* Tactical Nav Markers */}
+              {[0, 90, 180, 270].map((angle) => (
+                <div
+                  key={angle}
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full"
+                  style={{ transform: `translate(-50%, -50%) rotate(${angle}deg)` }}
+                >
+                  <motion.div
+                    className="absolute top-[-10px] left-1/2 -translate-x-1/2 w-0.5 h-4 bg-red-500 shadow-[0_0_10px_#ef4444]"
+                    animate={{ opacity: [0.2, 1, 0.2] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: angle / 90 * 0.5 }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Floating UI HUD elements - Centered Diagnostic Panel */}
+            <motion.div
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-4 card-glass rounded-xl border border-white/10 backdrop-blur-md hidden md:block z-30"
+              animate={{
+                scale: [1, 1.02, 1],
+                opacity: [0.9, 1, 0.9]
+              }}
+              transition={{ duration: 4, repeat: Infinity }}
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/50">Core Status: Stable</span>
+              </div>
+              <div className="space-y-1">
+                <div className="w-32 h-1 bg-white/10 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-red-500"
+                    initial={{ width: "0%" }}
+                    animate={{ width: "75%" }}
+                    transition={{ duration: 2, delay: 1 }}
+                  />
+                </div>
+                <div className="w-24 h-1 bg-white/10 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-red-400"
+                    initial={{ width: "0%" }}
+                    animate={{ width: "45%" }}
+                    transition={{ duration: 2, delay: 1.2 }}
+                  />
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </section>
@@ -147,7 +199,7 @@ const Home = () => {
       <div className="relative z-10 bg-[#09090b]">
         <motion.div
           ref={trustedCompaniesRef}
-          className="py-20 border-y border-white/05 bg-black/20"
+          className="py-12 border-y border-white/05 bg-black/20"
           initial={{ opacity: 0 }}
           animate={isTrustedCompaniesInView ? { opacity: 1 } : {}}
         >
@@ -156,16 +208,16 @@ const Home = () => {
           </div>
         </motion.div>
 
-        <section ref={featureRef} className="py-32 px-4 relative overflow-hidden">
+        <section ref={featureRef} className="py-20 px-4 relative overflow-hidden">
           <div className="max-w-7xl mx-auto">
             <Feature />
           </div>
         </section>
 
-        <section ref={liveMapRef} className="py-32 px-4 bg-black/40 border-y border-white/05 relative overflow-hidden">
+        <section ref={liveMapRef} className="py-20 px-4 bg-black/40 border-y border-white/05 relative overflow-hidden">
           <div className="max-w-7xl mx-auto">
-            <div className="mb-16 text-center max-w-3xl mx-auto">
-              <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-6">
+            <div className="mb-10 text-center max-w-3xl mx-auto">
+              <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-4">
                 Live Global <span className="text-red-500">Sentinel</span>
               </h2>
               <p className="text-gray-500 font-medium uppercase tracking-widest text-xs">
@@ -176,7 +228,7 @@ const Home = () => {
           </div>
         </section>
 
-        <section ref={malwareRef} className="py-32 px-4 mb-20">
+        <section ref={malwareRef} className="py-20 px-4 mb-20">
           <div className="max-w-7xl mx-auto">
             <Malware />
           </div>

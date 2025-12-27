@@ -1,6 +1,5 @@
 import { apiSlice } from "./apiSlice";
-
-const SOLUTIONS_URL = "/api/solutions";
+import { SOLUTIONS_URL } from "../constants";
 
 export const solutionApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
@@ -13,11 +12,11 @@ export const solutionApiSlice = apiSlice.injectEndpoints({
                 if (search) params.append("search", search);
                 return `${SOLUTIONS_URL}?${params.toString()}`;
             },
-            providesTags: ["Solution"],
+            providesTags: ["Solutions"],
         }),
         getSolutionById: builder.query({
             query: (id) => `${SOLUTIONS_URL}/${id}`,
-            providesTags: (result, error, id) => [{ type: "Solution", id }],
+            providesTags: (result, error, id) => [{ type: "Solutions", id }],
         }),
         createSolution: builder.mutation({
             query: (data) => ({
@@ -25,7 +24,7 @@ export const solutionApiSlice = apiSlice.injectEndpoints({
                 method: "POST",
                 body: data,
             }),
-            invalidatesTags: ["Solution"],
+            invalidatesTags: ["Solutions"],
         }),
         updateSolution: builder.mutation({
             query: ({ id, ...data }) => ({
@@ -33,21 +32,21 @@ export const solutionApiSlice = apiSlice.injectEndpoints({
                 method: "PUT",
                 body: data,
             }),
-            invalidatesTags: (result, error, { id }) => [{ type: "Solution", id }],
+            invalidatesTags: (result, error, { id }) => [{ type: "Solutions", id }],
         }),
         deleteSolution: builder.mutation({
             query: (id) => ({
                 url: `${SOLUTIONS_URL}/${id}`,
                 method: "DELETE",
             }),
-            invalidatesTags: ["Solution"],
+            invalidatesTags: ["Solutions"],
         }),
         applySolution: builder.mutation({
             query: (id) => ({
                 url: `${SOLUTIONS_URL}/${id}/apply`,
                 method: "POST",
             }),
-            invalidatesTags: (result, error, id) => [{ type: "Solution", id }],
+            invalidatesTags: (result, error, id) => [{ type: "Solutions", id }],
         }),
         rateSolution: builder.mutation({
             query: ({ id, effectiveness }) => ({
@@ -55,7 +54,7 @@ export const solutionApiSlice = apiSlice.injectEndpoints({
                 method: "POST",
                 body: { effectiveness },
             }),
-            invalidatesTags: (result, error, { id }) => [{ type: "Solution", id }],
+            invalidatesTags: (result, error, { id }) => [{ type: "Solutions", id }],
         }),
     }),
 });

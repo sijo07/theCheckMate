@@ -1,32 +1,26 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { BASE_URL } from "../constants";
+import { apiSlice } from "./apiSlice";
+import { NOTIFICATIONS_URL } from "../constants";
 
-export const notificationApiSlice = createApi({
-    reducerPath: "notificationApi",
-    baseQuery: fetchBaseQuery({
-        baseUrl: BASE_URL,
-        credentials: "include",
-    }),
-    tagTypes: ["Notifications"],
+export const notificationApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         getNotifications: builder.query({
             query: ({ type, read } = {}) => {
                 const params = new URLSearchParams();
                 if (type) params.append("type", type);
                 if (read !== undefined) params.append("read", read);
-                return `/api/notifications?${params.toString()}`;
+                return `${NOTIFICATIONS_URL}?${params.toString()}`;
             },
             providesTags: ["Notifications"],
         }),
 
         getNotificationById: builder.query({
-            query: (id) => `/api/notifications/${id}`,
+            query: (id) => `${NOTIFICATIONS_URL}/${id}`,
             providesTags: (result, error, id) => [{ type: "Notifications", id }],
         }),
 
         createNotification: builder.mutation({
             query: (notification) => ({
-                url: "/api/notifications",
+                url: NOTIFICATIONS_URL,
                 method: "POST",
                 body: notification,
             }),
@@ -35,7 +29,7 @@ export const notificationApiSlice = createApi({
 
         markAsRead: builder.mutation({
             query: (id) => ({
-                url: `/api/notifications/${id}/read`,
+                url: `${NOTIFICATIONS_URL}/${id}/read`,
                 method: "PUT",
             }),
             invalidatesTags: ["Notifications"],
@@ -43,7 +37,7 @@ export const notificationApiSlice = createApi({
 
         markAllAsRead: builder.mutation({
             query: () => ({
-                url: "/api/notifications/read-all",
+                url: `${NOTIFICATIONS_URL}/read-all`,
                 method: "PUT",
             }),
             invalidatesTags: ["Notifications"],
@@ -51,14 +45,14 @@ export const notificationApiSlice = createApi({
 
         deleteNotification: builder.mutation({
             query: (id) => ({
-                url: `/api/notifications/${id}`,
+                url: `${NOTIFICATIONS_URL}/${id}`,
                 method: "DELETE",
             }),
             invalidatesTags: ["Notifications"],
         }),
 
         getUnreadCount: builder.query({
-            query: () => "/api/notifications/unread-count",
+            query: () => `${NOTIFICATIONS_URL}/unread-count`,
             providesTags: ["Notifications"],
         }),
     }),

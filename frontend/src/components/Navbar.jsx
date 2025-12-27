@@ -98,9 +98,9 @@ const Navbar = () => {
                 transition={{ duration: 0.5 }}
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center h-16">
+                    <div className="flex items-center justify-between h-16">
                         {/* Logo - Left */}
-                        <div className="flex-1 flex justify-start">
+                        <div className="flex items-center">
                             <Link to="/" className="flex items-center space-x-2 group">
                                 <motion.div
                                     className="p-2 rounded-lg bg-red-500/10 border border-red-500/50"
@@ -109,14 +109,14 @@ const Navbar = () => {
                                 >
                                     <Shield className="w-6 h-6 text-red-500" />
                                 </motion.div>
-                                <span className="text-xl font-bold tracking-tighter text-white uppercase">
+                                <span className="text-lg md:text-xl font-bold tracking-tighter text-white uppercase">
                                     Check<span className="text-red-500">Mate</span>
                                 </span>
                             </Link>
                         </div>
 
                         {/* Desktop Navigation - Center */}
-                        <div className="hidden md:flex items-center justify-center px-12">
+                        <div className="hidden md:flex items-center justify-center flex-1">
                             <div className="flex items-center space-x-6 text-[11px] font-bold uppercase tracking-widest">
                                 {navLinks.map((link) => {
                                     if (link.adminOnly && !userInfo?.isAdmin) return null;
@@ -147,7 +147,7 @@ const Navbar = () => {
                         </div>
 
                         {/* Right Section - Right Tools */}
-                        <div className="flex-1 flex items-center justify-end space-x-6">
+                        <div className="flex items-center justify-end space-x-2 md:space-x-6">
                             {/* Notification Bell */}
                             {userInfo && (
                                 <motion.button
@@ -172,19 +172,39 @@ const Navbar = () => {
 
                             {/* User Menu */}
                             {userInfo ? (
-                                <div className="relative">
+                                <div
+                                    className="relative"
+                                    onMouseEnter={() => setIsUserMenuOpen(true)}
+                                    onMouseLeave={() => setIsUserMenuOpen(false)}
+                                >
                                     <motion.button
-                                        className="flex items-center space-x-2 p-2 rounded-lg hover:bg-white/10 transition-colors"
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
+                                        className="flex items-center space-x-3 p-1 pr-3 rounded-lg hover:bg-white/05 transition-colors group relative"
                                         onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                                     >
-                                        <img
-                                            src={userInfo.profilePic || `https://ui-avatars.com/api/?name=${userInfo.username}`}
-                                            alt={userInfo.username}
-                                            className="w-8 h-8 rounded-full border-2 border-red-500 object-cover"
-                                        />
-                                        <span className="hidden lg:block text-white text-sm font-medium">
+                                        {/* Tactical Avatar Container */}
+                                        <div className="relative w-10 h-10 flex items-center justify-center">
+                                            {/* Rotating Ring */}
+                                            <motion.div
+                                                className="absolute inset-0 border-2 border-dashed border-red-700/30 rounded-full"
+                                                animate={{ rotate: 360 }}
+                                                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                                            />
+
+                                            {/* Profile Image or Initials */}
+                                            <div className="w-8 h-8 rounded-full overflow-hidden border border-red-600/50 relative z-10 bg-black">
+                                                <img
+                                                    src={userInfo.profilePic || `https://ui-avatars.com/api/?name=${userInfo.username}&background=000&color=fff`}
+                                                    alt={userInfo.username}
+                                                    className="w-full h-full object-cover group-hover:opacity-100 transition-opacity"
+                                                />
+                                            </div>
+
+                                            {/* Corner Brackets */}
+                                            <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-red-600" />
+                                            <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-red-600" />
+                                        </div>
+
+                                        <span className="hidden lg:block text-white text-xs font-bold uppercase tracking-wider font-mono group-hover:text-red-400 transition-colors">
                                             {userInfo.username}
                                         </span>
                                     </motion.button>
@@ -193,44 +213,64 @@ const Navbar = () => {
                                     <AnimatePresence>
                                         {isUserMenuOpen && (
                                             <motion.div
-                                                className="absolute right-0 mt-2 w-48 glass-dark rounded-lg shadow-xl overflow-hidden"
-                                                initial={{ opacity: 0, y: -10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: -10 }}
-                                                transition={{ duration: 0.2 }}
+                                                className="absolute right-0 top-full mt-2 w-56 bg-black/95 backdrop-blur-xl border border-red-500/30 rounded-none shadow-[0_0_30px_rgba(220,38,38,0.15)] overflow-hidden z-50"
+                                                initial={{ opacity: 0, clipPath: "polygon(0 0, 100% 0, 100% 0, 0 0)" }}
+                                                animate={{ opacity: 1, clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)" }}
+                                                exit={{ opacity: 0, clipPath: "polygon(0 0, 100% 0, 100% 0, 0 0)" }}
+                                                transition={{ duration: 0.3 }}
                                             >
-                                                <Link
-                                                    to="/profile"
-                                                    className="flex items-center space-x-2 px-4 py-3 text-gray-300 hover:bg-white/10 transition-colors"
-                                                    onClick={() => setIsUserMenuOpen(false)}
-                                                >
-                                                    <User className="w-4 h-4" />
-                                                    <span>Profile</span>
-                                                </Link>
-                                                <Link
-                                                    to="/settings"
-                                                    className="flex items-center space-x-2 px-4 py-3 text-gray-300 hover:bg-white/10 transition-colors"
-                                                    onClick={() => setIsUserMenuOpen(false)}
-                                                >
-                                                    <Settings className="w-4 h-4" />
-                                                    <span>Settings</span>
-                                                </Link>
-                                                <button
-                                                    onClick={() => {
-                                                        setIsUserMenuOpen(false);
-                                                        handleLogout();
-                                                    }}
-                                                    className="w-full flex items-center space-x-2 px-4 py-3 text-red-400 hover:bg-white/10 transition-colors"
-                                                >
-                                                    <LogOut className="w-4 h-4" />
-                                                    <span>Logout</span>
-                                                </button>
+                                                {/* Background Raster */}
+                                                <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+
+                                                {/* Scanning Line */}
+                                                <motion.div
+                                                    className="absolute left-0 right-0 h-1 bg-red-600/30 z-0 pointer-events-none shadow-[0_0_10px_#ef4444]"
+                                                    animate={{ top: ["0%", "100%"] }}
+                                                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                                />
+
+                                                <div className="relative z-10 py-2">
+                                                    <Link
+                                                        to="/profile"
+                                                        className="flex items-center space-x-3 px-6 py-3 text-gray-200 hover:text-white hover:bg-red-900/10 transition-colors group border-l-2 border-transparent hover:border-red-600"
+                                                        onClick={() => setIsUserMenuOpen(false)}
+                                                    >
+                                                        <User className="w-4 h-4 text-red-500 group-hover:text-red-400 transition-colors" />
+                                                        <span className="text-[10px] uppercase tracking-widest font-mono">Profile_Config</span>
+                                                    </Link>
+                                                    <Link
+                                                        to="/settings"
+                                                        className="flex items-center space-x-3 px-6 py-3 text-gray-200 hover:text-white hover:bg-red-900/10 transition-colors group border-l-2 border-transparent hover:border-red-600"
+                                                        onClick={() => setIsUserMenuOpen(false)}
+                                                    >
+                                                        <Settings className="w-4 h-4 text-red-500 group-hover:text-red-400 transition-colors" />
+                                                        <span className="text-[10px] uppercase tracking-widest font-mono">Sys_Settings</span>
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => {
+                                                            setIsUserMenuOpen(false);
+                                                            handleLogout();
+                                                        }}
+                                                        className="w-full flex items-center space-x-3 px-6 py-3 text-red-400 hover:text-red-300 hover:bg-red-900/10 transition-colors group border-l-2 border-transparent hover:border-red-600"
+                                                    >
+                                                        <LogOut className="w-4 h-4" />
+                                                        <span className="text-[10px] uppercase tracking-widest font-mono">Term_Logout</span>
+                                                    </button>
+                                                </div>
+
+                                                {/* Footer Metadata */}
+                                                <div className="px-4 py-2 bg-black/50 border-t border-white/05">
+                                                    <div className="flex justify-between items-center text-[8px] font-mono text-gray-400 uppercase tracking-wider">
+                                                        <span>STATUS: AUTH</span>
+                                                        <span className="text-red-900">SEC_LVL_4</span>
+                                                    </div>
+                                                </div>
                                             </motion.div>
                                         )}
                                     </AnimatePresence>
                                 </div>
                             ) : (
-                                <div className="flex items-center space-x-2">
+                                <div className="hidden md:flex items-center space-x-2">
                                     <Link
                                         to="/login"
                                         className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
@@ -307,6 +347,71 @@ const Navbar = () => {
                                         </Link>
                                     );
                                 })}
+
+                                {/* Mobile Auth Buttons */}
+                                {!userInfo && (
+                                    <div className="pt-4 mt-4 border-t border-white/10 space-y-3">
+                                        <Link
+                                            to="/login"
+                                            className="block w-full text-center px-4 py-3 text-gray-300 hover:text-white border border-white/10 rounded-lg"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            Login
+                                        </Link>
+                                        <Link
+                                            to="/register"
+                                            className="block w-full text-center px-4 py-3 bg-red-600 text-white font-bold rounded-lg uppercase tracking-widest text-xs"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            Sign Up
+                                        </Link>
+                                    </div>
+                                )}
+
+                                {/* Mobile User Actions */}
+                                {userInfo && (
+                                    <div className="pt-4 mt-4 border-t border-white/10 space-y-2">
+                                        <div className="flex items-center space-x-3 px-4 py-2 mb-2">
+                                            <div className="w-8 h-8 rounded-full border border-red-500/50 overflow-hidden">
+                                                <img
+                                                    src={userInfo.profilePic || `https://ui-avatars.com/api/?name=${userInfo.username}&background=000&color=fff`}
+                                                    alt={userInfo.username}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-white text-xs font-bold font-mono uppercase truncate max-w-[150px]">{userInfo.username}</span>
+                                                <span className="text-[8px] text-red-500 font-mono uppercase tracking-widest">Operator_Active</span>
+                                            </div>
+                                        </div>
+                                        <Link
+                                            to="/profile"
+                                            className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-white/10"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            <User className="w-5 h-5 text-red-500" />
+                                            <span className="font-medium">Profile_Config</span>
+                                        </Link>
+                                        <Link
+                                            to="/settings"
+                                            className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-white/10"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            <Settings className="w-5 h-5 text-red-500" />
+                                            <span className="font-medium">Sys_Settings</span>
+                                        </Link>
+                                        <button
+                                            onClick={() => {
+                                                setIsMobileMenuOpen(false);
+                                                handleLogout();
+                                            }}
+                                            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-900/10"
+                                        >
+                                            <LogOut className="w-5 h-5" />
+                                            <span className="font-medium text-left">Term_Logout</span>
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </motion.div>
                     )}

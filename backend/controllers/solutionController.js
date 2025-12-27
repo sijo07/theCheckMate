@@ -38,8 +38,8 @@ const getSolutionById = asyncHandler(async (req, res) => {
         .populate("relatedIncident");
 
     if (!solution) {
-        res.status(404);
-        throw new Error("Solution not found");
+        res.status(404).json({ message: "QUERY_FAILED: SOLUTION_NOT_FOUND" });
+        return;
     }
 
     res.json(solution);
@@ -54,6 +54,7 @@ const createSolution = asyncHandler(async (req, res) => {
         description,
         category,
         severity,
+        location,
         relatedIncident,
         steps,
         tags,
@@ -65,6 +66,7 @@ const createSolution = asyncHandler(async (req, res) => {
         description,
         category,
         severity,
+        location,
         relatedIncident,
         steps,
         tags,
@@ -82,8 +84,8 @@ const updateSolution = asyncHandler(async (req, res) => {
     const solution = await Solution.findById(req.params.id);
 
     if (!solution) {
-        res.status(404);
-        throw new Error("Solution not found");
+        res.status(404).json({ message: "OVERRIDE_FAILED: SOLUTION_NOT_FOUND" });
+        return;
     }
 
     // Update fields
@@ -103,12 +105,12 @@ const deleteSolution = asyncHandler(async (req, res) => {
     const solution = await Solution.findById(req.params.id);
 
     if (!solution) {
-        res.status(404);
-        throw new Error("Solution not found");
+        res.status(404).json({ message: "PURGE_FAILED: SOLUTION_NOT_FOUND" });
+        return;
     }
 
     await Solution.deleteOne({ _id: req.params.id });
-    res.json({ message: "Solution deleted successfully" });
+    res.json({ message: "SOLUTION_RECORDS_PURGED_SUCCESSFULLY" });
 });
 
 // @desc    Mark solution as applied
@@ -118,14 +120,14 @@ const applySolution = asyncHandler(async (req, res) => {
     const solution = await Solution.findById(req.params.id);
 
     if (!solution) {
-        res.status(404);
-        throw new Error("Solution not found");
+        res.status(404).json({ message: "PROTOCOL_EXECUTION_FAILED: SOLUTION_NOT_FOUND" });
+        return;
     }
 
     solution.appliedCount += 1;
     await solution.save();
 
-    res.json({ message: "Solution applied", appliedCount: solution.appliedCount });
+    res.json({ message: "SOLUTION_APPLIED_SUCCESSFULLY", appliedCount: solution.appliedCount });
 });
 
 // @desc    Rate solution effectiveness
@@ -136,13 +138,13 @@ const rateSolution = asyncHandler(async (req, res) => {
     const solution = await Solution.findById(req.params.id);
 
     if (!solution) {
-        res.status(404);
-        throw new Error("Solution not found");
+        res.status(404).json({ message: "METRIC_SYNCH_FAILED: SOLUTION_NOT_FOUND" });
+        return;
     }
 
     if (effectiveness < 0 || effectiveness > 100) {
-        res.status(400);
-        throw new Error("Effectiveness must be between 0 and 100");
+        res.status(400).json({ message: "VALIDATION_ERROR: EFFECTIVENESS_OUT_OF_RANGE" });
+        return;
     }
 
     // Calculate new average effectiveness
@@ -152,7 +154,7 @@ const rateSolution = asyncHandler(async (req, res) => {
 
     await solution.save();
 
-    res.json({ message: "Solution rated", effectiveness: solution.effectiveness });
+    res.json({ message: "METRIC_SYNCH_SUCCESSFUL", effectiveness: solution.effectiveness });
 });
 
 export {

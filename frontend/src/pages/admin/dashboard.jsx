@@ -1,11 +1,18 @@
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Bar, Pie } from "react-chartjs-2";
+import { motion, AnimatePresence } from "framer-motion";
+import { Bar, Doughnut } from "react-chartjs-2";
 import {
   Globe,
   Shield,
   Server,
   Activity,
+  Zap,
+  Lock,
+  Cpu,
+  Wifi,
+  Terminal,
+  AlertCircle,
+  Download,
 } from "lucide-react";
 import {
   Chart as ChartJS,
@@ -24,8 +31,6 @@ import {
 } from "../../redux/api/incidentApiSlice";
 import Loader from "../../components/loader";
 
-
-// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -40,350 +45,360 @@ const Dashboard = () => {
   const {
     data: incidents = [],
     isLoading: loadingIncidents,
-    error: errorIncidents,
   } = useGetAllIncidentsQuery();
 
   const {
     data: topCountries = [],
-    isLoading: loadingCountries,
-    error: errorCountries,
   } = useGetTopTargetedCountriesQuery();
 
   const {
     data: topIndustries = [],
-    isLoading: loadingIndustries,
-    error: errorIndustries,
   } = useGetTopTargetedIndustriesQuery();
 
-  // Calculate additional statistics
-  const highSeverityCount =
-    incidents.filter((inc) => inc.severity === "High").length || 0;
-  const percentHighSeverity = incidents.length
-    ? Math.round((highSeverityCount / incidents.length) * 100)
-    : 0;
+  const highSeverityCount = incidents.filter((inc) => inc.severity === "High").length || 0;
+  const percentHighSeverity = incidents.length ? Math.round((highSeverityCount / incidents.length) * 100) : 0;
 
   const stats = [
-    {
-      title: "Total Incidents",
-      value: incidents.length || 0,
-      icon: <Shield className="w-6 h-6" />,
-      loading: loadingIncidents,
-      error: errorIncidents,
-      color: "rgba(239, 68, 68, 1)",
-      glow: "rgba(239, 68, 68, 0.4)",
-    },
-    {
-      title: "Targeted Sectors",
-      value: topIndustries.length || 0,
-      icon: <Server className="w-6 h-6" />,
-      loading: loadingIndustries,
-      error: errorIndustries,
-      color: "rgba(59, 130, 246, 1)",
-      glow: "rgba(59, 130, 246, 0.4)",
-    },
-    {
-      title: "Active Nodes",
-      value: topCountries.length || 0,
-      icon: <Globe className="w-6 h-6" />,
-      loading: loadingCountries,
-      error: errorCountries,
-      color: "rgba(16, 185, 129, 1)",
-      glow: "rgba(16, 185, 129, 0.4)",
-    },
-    {
-      title: "Severity Level",
-      value: `${percentHighSeverity}%`,
-      icon: <Activity className="w-6 h-6" />,
-      loading: loadingIncidents,
-      error: errorIncidents,
-      color: "rgba(245, 158, 11, 1)",
-      glow: "rgba(245, 158, 11, 0.4)",
-    },
+    { label: "NET_CAPACITY", value: "1.24 PB/s", color: "text-blue-800", icon: Wifi },
+    { label: "ENC_STRENGTH", value: "AES_256", color: "text-purple-800", icon: Lock },
+    { label: "NODE_STABILITY", value: "99.98%", color: "text-emerald-800", icon: Server },
+    { label: "THREAT_DETECTION", value: "REAL_TIME", color: "text-red-800", icon: Shield },
   ];
-
-  // Cyber Chart Configurations
-  const cyberColors = {
-    primary: "#ef4444",
-    secondary: "#3b82f6",
-    accent: "#8b5cf6",
-    success: "#10b981",
-    warning: "#f59e0b",
-    text: "#9ca3af",
-    grid: "rgba(255, 255, 255, 0.05)",
-    glows: [
-      "rgba(239, 68, 68, 0.8)",
-      "rgba(59, 130, 246, 0.8)",
-      "rgba(139, 92, 246, 0.8)",
-      "rgba(16, 185, 129, 0.8)",
-      "rgba(245, 158, 11, 0.8)",
-    ],
-  };
-
-  const barDataCountries = {
-    labels: topCountries.map((c) => c._id || "Unknown"),
-    datasets: [
-      {
-        label: "ATTACK VOLUME BY NODE",
-        data: topCountries.map((c) => c.count),
-        backgroundColor: cyberColors.primary,
-        borderColor: "rgba(239, 68, 68, 0.5)",
-        borderWidth: 1,
-        borderRadius: 4,
-        hoverBackgroundColor: "rgba(239, 68, 68, 0.8)",
-      },
-    ],
-  };
-
-  const barDataIndustries = {
-    labels: topIndustries.map((i) => i._id || "Unknown"),
-    datasets: [
-      {
-        label: "SECTOR VULNERABILITY",
-        data: topIndustries.map((i) => i.count),
-        backgroundColor: cyberColors.secondary,
-        borderColor: "rgba(59, 130, 246, 0.5)",
-        borderWidth: 1,
-        borderRadius: 4,
-        hoverBackgroundColor: "rgba(59, 130, 246, 0.8)",
-      },
-    ],
-  };
 
   const barOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        labels: {
-          color: "#fff",
-          font: { family: "monospace", size: 10, weight: "bold" },
-        },
-      },
+      legend: { display: false },
       tooltip: {
         backgroundColor: "#000",
-        titleFont: { family: "monospace", size: 12 },
-        bodyFont: { family: "monospace", size: 11 },
-        borderColor: "rgba(255, 255, 255, 0.1)",
+        titleFont: { family: "monospace", size: 10 },
+        bodyFont: { family: "monospace", size: 10 },
+        borderColor: "rgba(239, 68, 68, 0.4)",
         borderWidth: 1,
       },
     },
     scales: {
-      x: {
-        grid: { color: cyberColors.grid },
-        ticks: { color: cyberColors.text, font: { family: "monospace", size: 9 } },
-      },
-      y: {
-        grid: { color: cyberColors.grid },
-        ticks: { color: cyberColors.text, font: { family: "monospace", size: 9 } },
-      },
+      x: { grid: { display: false }, ticks: { color: "#666", font: { size: 8, family: "monospace" } } },
+      y: { grid: { color: "rgba(239, 68, 68, 0.05)" }, ticks: { color: "#666", font: { size: 8, family: "monospace" } } },
     },
   };
 
-  const malwareCount = incidents.reduce((acc, incident) => {
-    const malwareType = incident.type || "General";
-    acc[malwareType] = (acc[malwareType] || 0) + 1;
-    return acc;
-  }, {});
+  const barDataCountries = {
+    labels: topCountries.map((c) => c._id?.substring(0, 3).toUpperCase() || "UNK"),
+    datasets: [{
+      data: topCountries.map((c) => c.count),
+      backgroundColor: "rgba(153, 27, 27, 0.6)",
+      borderColor: "rgba(185, 28, 28, 0.4)",
+      borderWidth: 1,
+      barThickness: 10,
+    }],
+  };
 
   const malwareData = {
-    labels: Object.keys(malwareCount),
-    datasets: [
-      {
-        data: Object.values(malwareCount),
-        backgroundColor: [
-          "#c43c3c", // Red
-          "#3a75c4", // Blue
-          "#715ac5", // Purple
-          "#1a9664", // Green
-          "#8b5cf6",
-        ],
-        borderColor: "#111111",
-        borderWidth: 2,
-        hoverOffset: 10,
-      },
-    ],
-  };
-
-  const pieOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: "right",
-        labels: {
-          color: "#fff",
-          usePointStyle: false,
-          boxWidth: 40,
-          boxHeight: 12,
-          padding: 20,
-          font: { family: "monospace", size: 9, weight: "900" },
-        },
-      },
-      tooltip: {
-        backgroundColor: "#111",
-        titleFont: { family: "monospace" },
-        bodyFont: { family: "monospace" },
-        cornerRadius: 4,
-      }
-    },
+    labels: ["DDoS", "Malware", "Phishing", "Ransomware"],
+    datasets: [{
+      data: [35, 25, 20, 20],
+      backgroundColor: [
+        "rgba(185, 28, 28, 0.6)", // Deep Red
+        "rgba(30, 58, 138, 0.6)", // Deep Blue
+        "rgba(6, 78, 59, 0.6)",   // Deep Emerald
+        "rgba(88, 28, 135, 0.6)", // Deep Purple
+      ],
+      hoverBackgroundColor: "rgba(255, 255, 255, 0.1)",
+      borderWidth: 0,
+      spacing: 2,
+    }],
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-white p-4 md:p-8 font-mono relative overflow-hidden">
-      {/* Breadcrumb */}
-      <nav className="relative z-10 max-w-7xl mx-auto mb-6 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-600">
-        <Link to="/" className="hover:text-red-500 transition-colors">HQ_HOME</Link>
-        <span>/</span>
-        <span className="text-red-500/50">ADMIN_CORE</span>
-        <span>/</span>
-        <span className="text-red-500">DASHBOARD_V4</span>
-      </nav>
+    <div className="min-h-screen bg-[#050506] text-gray-400 p-4 md:p-6 font-mono selection:bg-red-500/30 overflow-hidden relative">
+      {/* Background Cyber Layer */}
+      <div className="fixed inset-0 pointer-events-none opacity-20">
+        <div className="w-full h-full" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)', backgroundSize: '80px 80px' }} />
+        <div className="absolute inset-0 bg-radial-gradient from-transparent via-black/40 to-[#050506]" />
+      </div>
 
-      {/* HUD Header */}
-      <header className="relative z-10 max-w-7xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-end gap-6 border-b border-white/05 pb-8">
-        <div>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-ping" />
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-red-500/70">Terminal Override: active</span>
-          </div>
-          <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none mb-2">
-            Cyber<span className="text-red-500">Dashboard</span>
-          </h1>
-          <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
-            <Activity className="w-3 h-3" />
-            LIVE THREAT INTELLIGENCE STREAM // ROOT ACCESS GRANTED
-          </p>
-        </div>
-
-        <div className="flex gap-4">
-          <div className="px-4 py-2 bg-white/05 border border-white/10 rounded-lg text-right hidden sm:block">
-            <p className="text-[8px] text-gray-600 font-bold uppercase tracking-widest mb-1">System Uptime</p>
-            <p className="text-sm font-black text-red-500 tracking-tighter">99.982%</p>
-          </div>
-          <div className="px-4 py-2 bg-white/05 border border-white/10 rounded-lg text-right">
-            <p className="text-[8px] text-gray-600 font-bold uppercase tracking-widest mb-1">Node identifier</p>
-            <p className="text-sm font-black text-white tracking-tighter uppercase">CHK-MT-729</p>
-          </div>
-        </div>
-      </header>
-
+      {/* Scanning Line */}
       <motion.div
-        className="max-w-7xl mx-auto relative z-10"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1 }}
-      >
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          {stats.map((stat, index) => (
-            <motion.div
-              key={index}
-              className="relative p-6 rounded-xl card-glass border border-white/05 group hover:border-red-500/30 transition-all overflow-hidden"
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              {/* Scanline effect on card */}
-              <div className="absolute top-0 left-0 w-full h-px bg-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.5)] -translate-y-[100%] group-hover:translate-y-[400%] transition-transform duration-1000 pointer-events-none" />
+        className="fixed left-0 right-0 h-[100px] bg-red-900/05 z-0 pointer-events-none border-y border-red-900/10"
+        animate={{ top: ["-10%", "110%"] }}
+        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+      />
 
-              <div className="flex items-center justify-between mb-4">
-                <div
-                  className="p-3 rounded-lg border border-white/10"
-                  style={{ backgroundColor: `${stat.color.replace('1)', '0.1)')}`, color: stat.color }}
-                >
-                  {stat.icon}
-                </div>
-                <div className="text-right">
-                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{stat.title}</p>
-                  <p className="text-2xl font-black text-white tracking-tighter">
-                    {stat.loading ? "..." : stat.value}
-                  </p>
-                </div>
+      <div className="max-w-[1600px] mx-auto relative z-10">
+        {/* Header HUD */}
+        <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 pb-6 border-b border-white/05 gap-6">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-2 h-2 bg-red-800 rounded-sm rotate-45 animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-red-900">System_Admin // Node: CHK-MT-09</span>
+            </div>
+            <h1 className="text-4xl font-black text-white uppercase tracking-tighter leading-none italic">
+              Command_<span className="text-red-900">Center</span>
+            </h1>
+          </div>
+
+          <div className="flex flex-wrap gap-4">
+            {stats.map((s, i) => (
+              <div key={i} className="px-5 py-2 bg-white/02 border border-white/05 rounded-lg">
+                <p className="text-[8px] font-bold uppercase tracking-widest text-gray-500 mb-1 flex items-center gap-2">
+                  <s.icon size={8} className={s.color} /> {s.label}
+                </p>
+                <p className="text-xs font-black text-white tracking-widest">{s.value}</p>
               </div>
+            ))}
+          </div>
+        </header>
 
-              {/* Mini Sparkline Visualization (Placeholder) */}
-              <div className="h-1 bg-white/05 rounded-full overflow-hidden mt-2">
-                <motion.div
-                  className="h-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"
-                  initial={{ width: 0 }}
-                  animate={{ width: "70%" }}
-                  transition={{ duration: 2, delay: 1 }}
-                />
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        {/* Main Dashboard Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-auto lg:h-[750px]">
 
-        {/* Main Charts Area */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
-          {/* Attack Volume Chart */}
-          <motion.div
-            className="lg:col-span-8 p-6 rounded-xl card-glass border border-white/05 relative overflow-hidden group"
-            initial={{ scale: 0.98, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white/50 flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-                Inter-Node Threat Pulse
+          {/* LEFT: Operational Status (Col 3) */}
+          <div className="lg:col-span-3 flex flex-col gap-6">
+            <section className="flex-1 bg-white/02 border border-white/05 rounded-2xl p-6 relative overflow-hidden flex flex-col decoration-none">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-6 flex items-center gap-2">
+                <Cpu size={12} className="text-blue-500" /> Operational_Node_Matrix
               </h3>
-              <div className="flex gap-2">
-                <div className="w-2 h-2 border border-white/20" />
-                <div className="w-2 h-2 border border-white/20" />
+              <div className="grid grid-cols-6 gap-2 mb-8">
+                {Array.from({ length: 48 }).map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className={`h-2 rounded-sm ${i % 7 === 0 ? 'bg-red-900/40 shadow-[0_0_8px_#991b1b40]' : 'bg-emerald-500/20'}`}
+                    animate={{ opacity: [1, 0.4, 1] }}
+                    transition={{ duration: Math.random() * 3 + 2, repeat: Infinity }}
+                  />
+                ))}
               </div>
-            </div>
-            <div className="h-[350px]">
-              <Bar data={barDataCountries} options={barOptions} />
-            </div>
-          </motion.div>
+              <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2">
+                {[
+                  { label: "Global Traffic", val: "482 GB/s", status: "Nominal" },
+                  { label: "Active Probes", val: "1,204", status: "Intercepted" },
+                  { label: "Enc Handshakes", val: "42k/m", status: "Secure" },
+                  { label: "Kernel Load", val: "24.2%", status: "Optimum" },
+                ].map((item, i) => (
+                  <div key={i} className="p-3 bg-black/40 border border-white/05 rounded-xl">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[9px] font-bold text-gray-600 uppercase">{item.label}</span>
+                      <span className="text-[8px] text-emerald-500 italic uppercase tracking-widest">{item.status}</span>
+                    </div>
+                    <div className="text-sm font-black text-white">{item.val}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
 
-          {/* Sector Vulnerability Chart */}
-          <motion.div
-            className="lg:col-span-12 xl:col-span-4 p-12 rounded-3xl bg-[#222222] border border-white/05 relative overflow-hidden shadow-2xl"
-            initial={{ x: 20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            <h3 className="text-[10px] font-bold uppercase tracking-[0.4em] text-gray-400 mb-10 text-center">
-              Infrastructure Risk Profile
-            </h3>
-            <div className="h-[350px] relative flex items-center justify-center">
-              <Pie data={malwareData} options={pieOptions} />
-              {/* Decorative HUD Circle Overlays */}
-              <div className="absolute inset-0 border-[30px] border-white/02 rounded-full pointer-events-none scale-[0.85] opacity-40 shadow-[inset_0_0_40px_rgba(0,0,0,0.5)]" />
-              <div className="absolute inset-0 border border-white/05 rounded-full pointer-events-none scale-95" />
-            </div>
-          </motion.div>
+            <section className="h-48 bg-red-900/05 border border-red-900/10 rounded-2xl p-6 relative overflow-hidden">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-red-800 mb-4">Lethality_Scale</h3>
+              <div className="flex items-center gap-6 h-full pb-8">
+                <div className="text-4xl font-black text-white italic">0.28</div>
+                <div className="flex-1 h-3 bg-white/05 rounded-full overflow-hidden relative">
+                  <motion.div
+                    className="h-full bg-red-800 shadow-[0_0_15px_#991b1b]"
+                    initial={{ width: 0 }}
+                    animate={{ width: "28%" }}
+                    transition={{ duration: 2 }}
+                  />
+                </div>
+              </div>
+            </section>
+          </div>
+
+          {/* CENTER: Data Core (Col 6) */}
+          <div className="lg:col-span-6 flex flex-col gap-6">
+            <section className="flex-1 bg-white/02 border border-white/05 rounded-2xl p-8 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none group-hover:opacity-[0.05] transition-opacity">
+                <Globe size={200} />
+              </div>
+              <div className="flex justify-between items-start mb-8 text-none">
+                <div>
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white flex items-center gap-2 mb-1">
+                    <Activity size={12} className="text-red-800" /> Inter-Node_Threat_Pulse
+                  </h3>
+                  <span className="text-[9px] text-gray-600 font-bold uppercase tracking-widest italic">Temporal Attack Volumetrics</span>
+                </div>
+                <div className="flex gap-4">
+                  <div className="text-right">
+                    <p className="text-[8px] text-gray-500 font-bold uppercase mb-1">Total_Signals</p>
+                    <p className="text-lg font-black text-white">{incidents.length}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[8px] text-gray-500 font-bold uppercase mb-1">Crit_Impact</p>
+                    <p className="text-lg font-black text-red-800">{highSeverityCount}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="h-[300px] mb-8">
+                <Bar data={barDataCountries} options={barOptions} />
+              </div>
+              <div className="grid grid-cols-3 gap-6">
+                <div className="p-4 bg-white/02 border border-white/05 rounded-2xl">
+                  <p className="text-[9px] text-gray-600 font-bold uppercase mb-2 italic">Threat_DNA</p>
+                  <div className="text-xs font-black text-white flex items-center justify-between">
+                    <span>VOLATILITY</span>
+                    <span className="text-red-800">HIGH</span>
+                  </div>
+                </div>
+                <div className="p-4 bg-white/02 border border-white/05 rounded-2xl">
+                  <p className="text-[9px] text-gray-600 font-bold uppercase mb-2 italic">Sector_Risk</p>
+                  <div className="text-xs font-black text-white flex items-center justify-between">
+                    <span>DYNAMIC</span>
+                    <span className="text-blue-500">42.2%</span>
+                  </div>
+                </div>
+                <div className="p-4 bg-white/02 border border-white/05 rounded-2xl">
+                  <p className="text-[9px] text-gray-600 font-bold uppercase mb-2 italic">Def_Active</p>
+                  <div className="text-xs font-black text-white flex items-center justify-between">
+                    <span>READY</span>
+                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="lg:h-48 bg-white/02 border border-white/05 rounded-2xl p-6 relative overflow-hidden flex items-center gap-8">
+              <div className="w-32 h-32 flex-shrink-0 relative group/chart">
+                {/* Perimeter Radar Ticks */}
+                <div className="absolute inset-[-10px] pointer-events-none opacity-20 group-hover/chart:opacity-40 transition-opacity">
+                  {[...Array(12)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="absolute w-1 h-1 bg-white"
+                      style={{
+                        top: '50%',
+                        left: '50%',
+                        transform: `rotate(${i * 30}deg) translateY(-60px)`
+                      }}
+                    />
+                  ))}
+                </div>
+
+                <motion.div
+                  className="w-full h-full relative z-10"
+                  initial={{ rotate: -90, scale: 0.8, opacity: 0 }}
+                  animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                >
+                  <Doughnut data={malwareData} options={doughnutOptions} />
+                </motion.div>
+
+                {/* Central HUD Core */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <motion.span
+                    className="text-xl font-black text-white italic leading-none"
+                    animate={{ opacity: [1, 0.5, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    28%
+                  </motion.span>
+                  <span className="text-[7px] font-bold text-red-800 uppercase tracking-widest mt-1">THREAT_LVL</span>
+                </div>
+
+                <div className="absolute inset-0 border-4 border-white/05 rounded-full scale-110" />
+              </div>
+              <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {malwareData.labels.map((label, i) => (
+                  <div key={i} className="text-center">
+                    <p className="text-[8px] text-gray-600 font-bold uppercase mb-1">{label}</p>
+                    <p className="text-sm font-black text-white italic">{malwareData.datasets[0].data[i]}%</p>
+                    <div className="w-8 h-1 mx-auto mt-2" style={{ backgroundColor: malwareData.datasets[0].backgroundColor[i] }} />
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          {/* RIGHT: System Telemetry (Col 3) */}
+          <div className="lg:col-span-3 flex flex-col gap-6">
+            <section className="flex-1 bg-white/02 border border-white/05 rounded-2xl p-6 relative overflow-hidden">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-6 flex items-center gap-2">
+                <Terminal size={12} className="text-red-800" /> Active_Threat_DNA
+              </h3>
+              <div className="space-y-3 overflow-hidden">
+                {incidents.slice(0, 8).map((inc, i) => (
+                  <div key={i} className="flex flex-col border-b border-white/05 pb-2">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[8px] font-black text-red-800/70 truncate w-2/3 uppercase">{inc.title}</span>
+                      <span className="text-[7px] text-gray-700 italic">{inc.severity}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] font-black text-white truncate max-w-[120px] uppercase">0x{Math.random().toString(16).slice(2, 8).toUpperCase()}</span>
+                      <div className="flex gap-1">
+                        <div className="w-2 h-0.5 bg-red-400" />
+                        <div className="w-2 h-0.5 bg-gray-800" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="absolute bottom-6 left-6 right-6 pt-4 border-t border-white/05 flex justify-between items-center">
+                <span className="text-[8px] font-bold text-gray-700 uppercase">Live_Ingestion_Active</span>
+                <Download size={10} className="text-gray-700 animate-bounce" />
+              </div>
+            </section>
+
+            <section className="h-48 bg-white/02 border border-white/05 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-center">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 border border-red-900/20 rounded flex items-center justify-center text-red-800">
+                  <Zap size={20} fill="currentColor" />
+                </div>
+                <div>
+                  <p className="text-[8px] text-gray-500 font-bold uppercase tracking-widest mb-0.5 italic">Energy_Output</p>
+                  <p className="text-xl font-black text-white italic">482.4 GW/h</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-[8px] text-gray-700 font-bold uppercase tracking-widest">
+                  <span>Load: 42%</span>
+                  <span>Optimum</span>
+                </div>
+                <div className="h-1 bg-white/05 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-500 w-[42%]" />
+                </div>
+              </div>
+            </section>
+          </div>
         </div>
+      </div>
 
-        {/* Bottom Section: Sector Vulnerability Table (Previously another bar chart) */}
+      {/* Sidebar Data Strip */}
+      <div className="fixed top-0 right-0 w-1 h-full bg-red-900/10 z-50 overflow-hidden">
         <motion.div
-          className="p-6 rounded-xl card-glass border border-white/05 relative overflow-hidden"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.6 }}
-        >
-          <div className="flex justify-between items-center mb-8">
-            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-white">
-              Secondary Sector Analysis
-            </h3>
-            <div className="h-0.5 flex-1 bg-gradient-to-r from-white/10 to-transparent mx-6" />
-          </div>
-          <div className="h-[300px]">
-            <Bar data={barDataIndustries} options={barOptions} />
-          </div>
-        </motion.div>
-      </motion.div>
+          className="w-full h-20 bg-red-900 shadow-[0_0_20px_#991b1b]"
+          animate={{ top: ["-20%", "120%"] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+        />
+      </div>
 
-      {/* Decorative Glitch Overlay (Subtle) */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03] cyber-grid" />
-
-      {/* Background Glows */}
-      <div className="fixed top-[-10%] right-[-10%] w-1/2 h-1/2 bg-red-500/05 blur-[200px] pointer-events-none" />
-      <div className="fixed bottom-[-10%] left-[-10%] w-1/2 h-1/2 bg-blue-500/05 blur-[200px] pointer-events-none" />
+      {/* Bottom HUD Metadata */}
+      <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-md border-t border-white/05 py-2 px-6 z-50 flex justify-between items-center text-[8px] font-black uppercase tracking-[0.3em] text-gray-600">
+        <div className="flex gap-8">
+          <span>Terminal: /dev/tty0</span>
+          <span className="text-emerald-500/50">ENC: AES_256_ACTIVE</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-red-900/50 animate-pulse">!! SECURITY_TAMPER_DETECTED !!</span>
+          <span>© 2025 CHECK_MATE OS v4.2.0</span>
+        </div>
+      </div>
     </div>
   );
+};
+
+const doughnutOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  cutout: "85%",
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: "#000",
+      titleFont: { family: "monospace", size: 10 },
+      bodyFont: { family: "monospace", size: 10 },
+      borderColor: "rgba(239, 68, 68, 0.2)",
+      borderWidth: 1,
+    },
+  },
 };
 
 export default Dashboard;

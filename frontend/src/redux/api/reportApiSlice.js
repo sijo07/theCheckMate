@@ -1,27 +1,21 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { BASE_URL } from "../constants";
+import { apiSlice } from "./apiSlice";
+import { REPORTS_URL } from "../constants";
 
-export const reportApiSlice = createApi({
-    reducerPath: "reportApi",
-    baseQuery: fetchBaseQuery({
-        baseUrl: BASE_URL,
-        credentials: "include",
-    }),
-    tagTypes: ["Reports"],
+export const reportApiSlice = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         getReports: builder.query({
-            query: () => "/api/reports",
+            query: () => REPORTS_URL,
             providesTags: ["Reports"],
         }),
 
         getReportById: builder.query({
-            query: (id) => `/api/reports/${id}`,
+            query: (id) => `${REPORTS_URL}/${id}`,
             providesTags: (result, error, id) => [{ type: "Reports", id }],
         }),
 
         createReport: builder.mutation({
             query: (report) => ({
-                url: "/api/reports",
+                url: REPORTS_URL,
                 method: "POST",
                 body: report,
             }),
@@ -30,14 +24,14 @@ export const reportApiSlice = createApi({
 
         deleteReport: builder.mutation({
             query: (id) => ({
-                url: `/api/reports/${id}`,
+                url: `${REPORTS_URL}/${id}`,
                 method: "DELETE",
             }),
             invalidatesTags: ["Reports"],
         }),
 
         getReportData: builder.query({
-            query: (id) => `/api/reports/${id}/data`,
+            query: (id) => `${REPORTS_URL}/${id}/data`,
             providesTags: (result, error, id) => [{ type: "Reports", id }],
         }),
     }),
