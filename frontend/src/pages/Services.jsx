@@ -4,6 +4,7 @@ import {
     useGetServicesQuery,
     useCreateServiceRequestMutation,
 } from "../redux/api/serviceApiSlice";
+import { useSelector } from "react-redux";
 import AnimatedPage from "../components/AnimatedPage";
 import { CardSkeleton } from "../components/LoadingSkeleton";
 import {
@@ -23,6 +24,7 @@ import {
 import { toast } from "react-toastify";
 
 const Services = () => {
+    const { userInfo } = useSelector((state) => state.auth);
     const [searchTerm, setSearchTerm] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("");
     const [selectedService, setSelectedService] = useState(null);
@@ -53,7 +55,8 @@ const Services = () => {
     const confirmRequest = async () => {
         try {
             await createServiceRequest({
-                serviceId: selectedService._id,
+                service: selectedService._id,
+                requirements: "Standard Deployment Protocol", // Default generic requirement
                 status: 'pending'
             }).unwrap();
 
@@ -429,15 +432,21 @@ const Services = () => {
                                         >
                                             Abort_Mission
                                         </button>
-                                        <button
-                                            onClick={confirmRequest}
-                                            className="flex-1 bg-red-600 hover:bg-red-500 text-black text-xs font-black uppercase tracking-[0.2em] transition-all shadow-[0_0_30px_rgba(220,38,38,0.4)] hover:shadow-[0_0_50px_rgba(220,38,38,0.6)] flex items-center justify-center gap-3 relative overflow-hidden group"
-                                        >
-                                            <span className="relative z-10 flex items-center gap-2">
-                                                <Terminal size={14} /> Initialize_Protocol
-                                            </span>
-                                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 transform skew-y-12" />
-                                        </button>
+                                        {userInfo?.isAdmin ? (
+                                            <button
+                                                onClick={confirmRequest}
+                                                className="flex-1 bg-red-600 hover:bg-red-500 text-black text-xs font-black uppercase tracking-[0.2em] transition-all shadow-[0_0_30px_rgba(220,38,38,0.4)] hover:shadow-[0_0_50px_rgba(220,38,38,0.6)] flex items-center justify-center gap-3 relative overflow-hidden group"
+                                            >
+                                                <span className="relative z-10 flex items-center gap-2">
+                                                    <Terminal size={14} /> Initialize_Protocol
+                                                </span>
+                                                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 transform skew-y-12" />
+                                            </button>
+                                        ) : (
+                                            <div className="flex-1 bg-gray-900 text-gray-500 border border-white/10 text-xs font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2 cursor-not-allowed opacity-75">
+                                                <Lock size={14} /> Restricted // Admin_Only
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>

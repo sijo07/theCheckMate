@@ -39,6 +39,7 @@ const Issues = () => {
     const [formData, setFormData] = useState({
         title: "",
         description: "",
+        location: "",
         type: "bug",
         priority: "medium",
     });
@@ -96,32 +97,10 @@ const Issues = () => {
             await createIssue(formData).unwrap();
             toast.success("ANOMALY_LOGGED_SUCCESSFULLY");
             setShowCreateModal(false);
-            setFormData({ title: "", description: "", type: "bug", priority: "medium" });
+            setFormData({ title: "", description: "", location: "", type: "bug", priority: "medium" });
             refetch();
         } catch (error) {
             toast.error(error?.data?.message || "LOGGING_FAILED");
-        }
-    };
-
-    const handleDeleteIssue = async (id) => {
-        if (window.confirm("CONFIRM_DELETION: Purge anomaly record?")) {
-            try {
-                await deleteIssue(id).unwrap();
-                toast.success("RECORD_PURGED");
-                refetch();
-            } catch (error) {
-                toast.error(error?.data?.message || "PURGE_FAILED");
-            }
-        }
-    };
-
-    const handleResolveIssue = async (id) => {
-        try {
-            await resolveIssue({ id, description: "Threat neutralized manually." }).unwrap();
-            toast.success("THREAT_NEUTRALIZED");
-            refetch();
-        } catch (error) {
-            toast.error(error?.data?.message || "RESOLUTION_FAILED");
         }
     };
 
@@ -283,21 +262,9 @@ const Issues = () => {
 
                                                 {/* Actions */}
                                                 <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-4 pt-4 md:pt-0 border-t md:border-t-0 border-red-900/10">
-                                                    {issue.status !== "resolved" && (
-                                                        <button
-                                                            onClick={() => handleResolveIssue(issue._id)}
-                                                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-red-900/10 hover:bg-red-600/20 text-red-500 border border-red-900/50 hover:border-red-500 text-[10px] font-black uppercase tracking-widest transition-all"
-                                                        >
-                                                            <CheckCircle2 className="w-3 h-3" />
-                                                            Neutralize
-                                                        </button>
-                                                    )}
-                                                    <button
-                                                        onClick={() => handleDeleteIssue(issue._id)}
-                                                        className="p-3 text-gray-600 hover:text-red-500 transition-colors bg-white/05 md:bg-transparent"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
+                                                    <div className={`px-4 py-2 border text-[10px] font-black uppercase tracking-widest ${issue.status === 'resolved' ? 'border-emerald-500/50 text-emerald-500 bg-emerald-500/5' : 'border-red-500/30 text-red-500 bg-red-950/10'}`}>
+                                                        {issue.status === 'resolved' ? 'Neutralized' : 'Active_Anomaly'}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </motion.div>
@@ -355,6 +322,18 @@ const Issues = () => {
                                                 placeholder="IDENTIFY_THREAT..."
                                                 autoComplete="off"
                                                 required
+                                            />
+                                        </div>
+
+                                        <div className="col-span-2">
+                                            <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-2 block">Location_Vector</label>
+                                            <input
+                                                type="text"
+                                                value={formData.location}
+                                                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                                className="w-full bg-[#111] border border-red-900/30 p-4 text-white text-xs font-bold uppercase tracking-widest focus:outline-none focus:border-red-500 transition-colors"
+                                                placeholder="SPECIFY_NODE_OR_REGION..."
+                                                autoComplete="off"
                                             />
                                         </div>
 

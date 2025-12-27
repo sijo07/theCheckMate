@@ -127,6 +127,19 @@ const applySolution = asyncHandler(async (req, res) => {
     solution.appliedCount += 1;
     await solution.save();
 
+    // Side Effect: Resolve Related Incident if exists
+    if (solution.relatedIncident) {
+        const Incident = (await import("../models/incidentModel.js")).default;
+        await Incident.findByIdAndUpdate(solution.relatedIncident, { status: "resolved" });
+
+        const io = req.app.get("io");
+        if (io) {
+            // Fetch updated incident to emit full object if needed, or just emit ID
+            const updatedIncident = await Incident.findById(solution.relatedIncident);
+            io.emit("incident-resolved", updatedIncident);
+        }
+    }
+
     res.json({ message: "SOLUTION_APPLIED_SUCCESSFULLY", appliedCount: solution.appliedCount });
 });
 

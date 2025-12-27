@@ -226,155 +226,118 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#020203] text-gray-300 font-mono relative overflow-hidden pb-12">
-      {/* Background Ambience */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(185,28,28,0.05),transparent_70%)]" />
-        <div className="w-full h-full opacity-10" style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)',
-          backgroundSize: '40px 40px'
-        }} />
+    <div className="space-y-8">
+
+      {/* Top Stats Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <CyberCard delay={0.1} className="!p-0 border-l-4 border-l-red-600">
+          <StatPill label="Total Incidents" value={incidents.length} icon={Database} trend={12} />
+        </CyberCard>
+        <CyberCard delay={0.2} className="!p-0 border-l-4 border-l-red-600">
+          <StatPill label="Critical Alerts" value={criticalCount} icon={AlertCircle} trend={-5} />
+        </CyberCard>
+        <CyberCard delay={0.3} className="!p-0 border-l-4 border-l-red-600">
+          <StatPill label="Active Nodes" value="1,402" icon={Wifi} trend={2} />
+        </CyberCard>
+        <CyberCard delay={0.4} className="!p-0 border-l-4 border-l-red-600">
+          <StatPill label="Sys Integrity" value="99.9%" icon={Shield} />
+        </CyberCard>
       </div>
 
-      {/* Header Bar */}
-      <header className="fixed top-20 left-0 right-0 h-16 bg-[#0a0a0b]/90 backdrop-blur border-b border-red-900/30 z-40 px-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Shield className="w-6 h-6 text-red-600 animate-pulse" />
-          <h1 className="text-lg font-black uppercase tracking-[0.2em] text-white">
-            Admin <span className="text-red-600">Console_</span>
-          </h1>
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        <div className="flex items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-gray-500">
-          <div className="hidden md:flex items-center gap-2">
-            <Globe size={12} className="text-blue-500" />
-            <span>Net_Status: <span className="text-white">Online</span></span>
-          </div>
-          <div className="hidden md:flex items-center gap-2">
-            <Server size={12} className="text-emerald-500" />
-            <span>Server_Load: <span className="text-white">34%</span></span>
-          </div>
-          <div className="px-3 py-1 bg-red-900/20 border border-red-900/50 text-red-500 rounded flex items-center gap-2">
-            <span className="w-2 h-2 bg-red-500 rounded-full animate-ping" />
-            {time.toLocaleTimeString()}
-          </div>
-        </div>
-      </header>
+        {/* Left Col: Main Chart (8 cols) */}
+        <div className="lg:col-span-8 space-y-6">
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 pt-4 lg:pt-24 max-w-[1600px] relative z-10">
-
-        {/* Top Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <CyberCard delay={0.1} className="!p-0 border-l-4 border-l-red-600">
-            <StatPill label="Total Incidents" value={incidents.length} icon={Database} trend={12} />
+          {/* Global Threat Map Visualization (using Bar for now) */}
+          <CyberCard title="Global_Threat_Vector_Analysis" icon={Crosshair} className="h-[400px]">
+            <div className="h-full pb-8">
+              <Bar data={incidentsChartData} options={chartCommonOptions} />
+            </div>
           </CyberCard>
-          <CyberCard delay={0.2} className="!p-0 border-l-4 border-l-red-600">
-            <StatPill label="Critical Alerts" value={criticalCount} icon={AlertCircle} trend={-5} />
-          </CyberCard>
-          <CyberCard delay={0.3} className="!p-0 border-l-4 border-l-red-600">
-            <StatPill label="Active Nodes" value="1,402" icon={Wifi} trend={2} />
-          </CyberCard>
-          <CyberCard delay={0.4} className="!p-0 border-l-4 border-l-red-600">
-            <StatPill label="Sys Integrity" value="99.9%" icon={Shield} />
-          </CyberCard>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-          {/* Left Col: Main Chart (8 cols) */}
-          <div className="lg:col-span-8 space-y-6">
-
-            {/* Global Threat Map Visualization (using Bar for now) */}
-            <CyberCard title="Global_Threat_Vector_Analysis" icon={Crosshair} className="h-[400px]">
-              <div className="h-full pb-8">
-                <Bar data={incidentsChartData} options={chartCommonOptions} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Severity Pulse */}
+            <CyberCard title="Severity_Distribution" icon={Activity} className="h-[300px]">
+              <div className="h-full pb-6 relative flex items-center justify-center">
+                <Doughnut
+                  data={severityChartData}
+                  options={{
+                    ...chartCommonOptions,
+                    cutout: '70%',
+                    plugins: { legend: { display: false } }
+                  }}
+                />
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-2xl font-black text-white">{highSeverityCount}</span>
+                  <span className="text-[8px] uppercase tracking-widest text-red-500">High_Risk</span>
+                </div>
               </div>
             </CyberCard>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Severity Pulse */}
-              <CyberCard title="Severity_Distribution" icon={Activity} className="h-[300px]">
-                <div className="h-full pb-6 relative flex items-center justify-center">
-                  <Doughnut
-                    data={severityChartData}
-                    options={{
-                      ...chartCommonOptions,
-                      cutout: '70%',
-                      plugins: { legend: { display: false } }
-                    }}
-                  />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-2xl font-black text-white">{highSeverityCount}</span>
-                    <span className="text-[8px] uppercase tracking-widest text-red-500">High_Risk</span>
+            {/* Live Terminal */}
+            <CyberCard title="System_Kernel_Log" icon={Terminal} className="h-[300px] !p-0 overflow-hidden flex flex-col">
+              <TerminalLog />
+            </CyberCard>
+          </div>
+        </div>
+
+        {/* Right Col: Lists & Actions (4 cols) */}
+        <div className="lg:col-span-4 space-y-6">
+
+          {/* Top Industries */}
+          <CyberCard title="Sector_Vulnerability_Index" icon={Hash}>
+            <div className="space-y-4">
+              {topIndustries.map((ind, i) => (
+                <div key={i} className="group">
+                  <div className="flex justify-between items-end mb-1">
+                    <span className="text-[10px] font-bold uppercase text-gray-400 group-hover:text-white transition-colors">
+                      {ind._id}
+                    </span>
+                    <span className="text-xs font-mono text-red-500">{ind.count}</span>
+                  </div>
+                  <div className="w-full h-1 bg-white/05 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(ind.count / topIndustries[0].count) * 100}%` }}
+                      transition={{ duration: 1, delay: i * 0.1 }}
+                      className="h-full bg-red-600"
+                    />
                   </div>
                 </div>
-              </CyberCard>
-
-              {/* Live Terminal */}
-              <CyberCard title="System_Kernel_Log" icon={Terminal} className="h-[300px] !p-0 overflow-hidden flex flex-col">
-                <TerminalLog />
-              </CyberCard>
+              ))}
             </div>
-          </div>
+          </CyberCard>
 
-          {/* Right Col: Lists & Actions (4 cols) */}
-          <div className="lg:col-span-4 space-y-6">
+          {/* System Health */}
+          <CyberCard title="Node_Health_Status" icon={Cpu}>
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { l: 'CPU_01', v: '42%' },
+                { l: 'CPU_02', v: '38%' },
+                { l: 'MEM_USG', v: '12GB' },
+                { l: 'NET_IO', v: '4Tb' },
+              ].map((stat, i) => (
+                <div key={i} className="bg-red-900/10 border border-red-900/20 p-3 text-center">
+                  <div className="text-[8px] text-gray-500 uppercase tracking-widest mb-1">{stat.l}</div>
+                  <div className="text-lg font-black text-white">{stat.v}</div>
+                </div>
+              ))}
+            </div>
+          </CyberCard>
 
-            {/* Top Industries */}
-            <CyberCard title="Sector_Vulnerability_Index" icon={Hash}>
-              <div className="space-y-4">
-                {topIndustries.map((ind, i) => (
-                  <div key={i} className="group">
-                    <div className="flex justify-between items-end mb-1">
-                      <span className="text-[10px] font-bold uppercase text-gray-400 group-hover:text-white transition-colors">
-                        {ind._id}
-                      </span>
-                      <span className="text-xs font-mono text-red-500">{ind.count}</span>
-                    </div>
-                    <div className="w-full h-1 bg-white/05 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(ind.count / topIndustries[0].count) * 100}%` }}
-                        transition={{ duration: 1, delay: i * 0.1 }}
-                        className="h-full bg-red-600"
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CyberCard>
+          {/* Quick Actions */}
+          <CyberCard title="Manual_Override" icon={Lock}>
+            <div className="space-y-2">
+              <button className="w-full py-3 bg-red-600/10 hover:bg-red-600/20 border border-red-600/30 text-red-500 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2">
+                <Zap size={12} /> Force_System_Purge
+              </button>
+              <button className="w-full py-3 bg-white/05 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2">
+                <Download size={12} /> Export_Audit_Log
+              </button>
+            </div>
+          </CyberCard>
 
-            {/* System Health */}
-            <CyberCard title="Node_Health_Status" icon={Cpu}>
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { l: 'CPU_01', v: '42%' },
-                  { l: 'CPU_02', v: '38%' },
-                  { l: 'MEM_USG', v: '12GB' },
-                  { l: 'NET_IO', v: '4Tb' },
-                ].map((stat, i) => (
-                  <div key={i} className="bg-red-900/10 border border-red-900/20 p-3 text-center">
-                    <div className="text-[8px] text-gray-500 uppercase tracking-widest mb-1">{stat.l}</div>
-                    <div className="text-lg font-black text-white">{stat.v}</div>
-                  </div>
-                ))}
-              </div>
-            </CyberCard>
-
-            {/* Quick Actions */}
-            <CyberCard title="Manual_Override" icon={Lock}>
-              <div className="space-y-2">
-                <button className="w-full py-3 bg-red-600/10 hover:bg-red-600/20 border border-red-600/30 text-red-500 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2">
-                  <Zap size={12} /> Force_System_Purge
-                </button>
-                <button className="w-full py-3 bg-white/05 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2">
-                  <Download size={12} /> Export_Audit_Log
-                </button>
-              </div>
-            </CyberCard>
-
-          </div>
         </div>
       </div>
     </div>

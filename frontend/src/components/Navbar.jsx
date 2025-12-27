@@ -18,6 +18,7 @@ import {
     Globe,
     Phone,
     AlertTriangle,
+    Terminal,
 } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -80,15 +81,21 @@ const Navbar = () => {
     const navLinks = [
         { name: "Home", path: "/", icon: Shield },
         { name: "Threat Intel", path: "/threat-intelligence", icon: AlertTriangle },
-        { name: "Analytics", path: "/admin/dashboard", icon: BarChart3, adminOnly: true },
         { name: "Services", path: "/services", icon: Shield },
-        { name: "Solutions", path: "/solutions", icon: FileText },
         { name: "Issues", path: "/issues", icon: AlertTriangle },
         { name: "Reports", path: "/reports", icon: FileText },
-        { name: "Contact", path: "/contact", icon: Phone },
+        { name: "Contact", path: "/contact", icon: Phone, hideForAdmin: true },
     ];
 
     const isHome = location.pathname === "/";
+    const isAdmin = userInfo?.isAdmin;
+    const isAdminRoute = location.pathname.startsWith("/admin");
+
+    const visibleLinks = navLinks.filter(link => {
+        if (link.adminOnly && !isAdmin) return false;
+        if (link.hideForAdmin && isAdmin) return false;
+        return true;
+    });
 
     const handleNavClick = () => {
         setIsMobileMenuOpen(false);
@@ -128,32 +135,54 @@ const Navbar = () => {
 
                         <div className="hidden lg:flex items-center justify-center px-6">
                             <div className="flex items-center gap-4 text-[11px] font-bold uppercase tracking-widest">
-                                {navLinks.map((link) => {
-                                    if (link.adminOnly && !userInfo?.isAdmin) return null;
-                                    const Icon = link.icon;
-                                    return (
-                                        <Link
-                                            key={link.path}
-                                            to={link.path}
-                                            onClick={handleNavClick}
-                                            className={`relative px-1 py-2 transition-colors group whitespace-nowrap ${location.pathname === link.path ? "text-white" : "text-gray-400 hover:text-white"
-                                                }`}
-                                        >
-                                            <div className="flex items-center space-x-2">
-                                                <Icon className={`w-3.5 h-3.5 transition-colors ${location.pathname === link.path ? "text-red-500" : "group-hover:text-red-500"
-                                                    }`} />
-                                                <span>{link.name}</span>
-                                            </div>
-                                            <motion.div
-                                                className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-500"
-                                                initial={false}
-                                                animate={{ scaleX: location.pathname === link.path ? 1 : 0 }}
-                                                whileHover={{ scaleX: 1 }}
-                                                transition={{ duration: 0.3 }}
-                                            />
-                                        </Link>
-                                    );
-                                })}
+                                {!isAdminRoute ? (
+                                    <>
+                                        {visibleLinks.map((link) => {
+                                            const Icon = link.icon;
+                                            return (
+                                                <Link
+                                                    key={link.path}
+                                                    to={link.path}
+                                                    onClick={handleNavClick}
+                                                    className={`relative px-1 py-2 transition-colors group whitespace-nowrap ${location.pathname === link.path ? "text-white" : "text-gray-400 hover:text-white"
+                                                        }`}
+                                                >
+                                                    <div className="flex items-center space-x-2">
+                                                        <Icon className={`w-3.5 h-3.5 transition-colors ${location.pathname === link.path ? "text-red-500" : "group-hover:text-red-500"
+                                                            }`} />
+                                                        <span>{link.name}</span>
+                                                    </div>
+                                                    <motion.div
+                                                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600"
+                                                        initial={false}
+                                                        animate={{ scaleX: location.pathname === link.path ? 1 : 0 }}
+                                                        whileHover={{ scaleX: 1 }}
+                                                        transition={{ duration: 0.3 }}
+                                                    />
+                                                </Link>
+                                            );
+                                        })}
+                                        {isAdmin && (
+                                            <Link
+                                                to="/admin/dashboard"
+                                                onClick={handleNavClick}
+                                                className="flex items-center gap-2 px-4 py-2 border border-red-500/50 hover:border-red-500 bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-all rounded"
+                                            >
+                                                <Terminal className="w-4 h-4" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest">Command_Console</span>
+                                            </Link>
+                                        )}
+                                    </>
+                                ) : (
+                                    <Link
+                                        to="/"
+                                        onClick={handleNavClick}
+                                        className="flex items-center gap-2 px-4 py-2 border border-blue-500/50 hover:border-blue-500 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 transition-all rounded"
+                                    >
+                                        <Globe className="w-4 h-4" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest">Return_to_Nexus</span>
+                                    </Link>
+                                )}
                             </div>
                         </div>
 
@@ -226,9 +255,9 @@ const Navbar = () => {
                                         {isUserMenuOpen && (
                                             <motion.div
                                                 className="absolute right-0 top-full mt-2 w-56 bg-black/95 backdrop-blur-xl border border-red-500/30 rounded-none shadow-[0_0_30px_rgba(220,38,38,0.15)] overflow-hidden z-50"
-                                                initial={{ opacity: 0, clipPath: "polygon(0 0, 100% 0, 100% 0, 0 0)" }}
-                                                animate={{ opacity: 1, clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)" }}
-                                                exit={{ opacity: 0, clipPath: "polygon(0 0, 100% 0, 100% 0, 0 0)" }}
+                                                initial={{ opacity: 0, clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)" }}
+                                                animate={{ opacity: 1, clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)" }}
+                                                exit={{ opacity: 0, clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)" }}
                                                 transition={{ duration: 0.3 }}
                                             >
                                                 {/* Background Raster */}
@@ -341,24 +370,46 @@ const Navbar = () => {
                             transition={{ duration: 0.3 }}
                         >
                             <div className="px-4 py-4 space-y-2">
-                                {navLinks.map((link) => {
-                                    if (link.adminOnly && !userInfo?.isAdmin) return null;
-                                    const Icon = link.icon;
-                                    return (
-                                        <Link
-                                            key={link.path}
-                                            to={link.path}
-                                            className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${location.pathname === link.path
-                                                ? "bg-red-500/10 text-white border border-red-500/20"
-                                                : "text-gray-300 hover:bg-white/10"
-                                                }`}
-                                            onClick={handleNavClick}
-                                        >
-                                            <Icon className={`w-5 h-5 ${location.pathname === link.path ? "text-red-500" : ""}`} />
-                                            <span className="font-medium">{link.name}</span>
-                                        </Link>
-                                    );
-                                })}
+                                {!isAdminRoute ? (
+                                    <>
+                                        {visibleLinks.map((link) => {
+                                            const Icon = link.icon;
+                                            return (
+                                                <Link
+                                                    key={link.path}
+                                                    to={link.path}
+                                                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${location.pathname === link.path
+                                                        ? "bg-red-500/10 text-white border border-red-500/20"
+                                                        : "text-gray-300 hover:bg-white/10"
+                                                        }`}
+                                                    onClick={handleNavClick}
+                                                >
+                                                    <Icon className={`w-5 h-5 ${location.pathname === link.path ? "text-red-500" : ""}`} />
+                                                    <span className="font-medium">{link.name}</span>
+                                                </Link>
+                                            );
+                                        })}
+                                        {isAdmin && (
+                                            <Link
+                                                to="/admin/dashboard"
+                                                onClick={handleNavClick}
+                                                className="flex items-center gap-3 px-4 py-4 mt-4 bg-red-600/20 text-red-500 border border-red-600/50 rounded-lg"
+                                            >
+                                                <Terminal className="w-5 h-5" />
+                                                <span className="font-black uppercase tracking-widest text-xs">Command_Console</span>
+                                            </Link>
+                                        )}
+                                    </>
+                                ) : (
+                                    <Link
+                                        to="/"
+                                        onClick={handleNavClick}
+                                        className="flex items-center gap-3 px-4 py-4 bg-blue-600/20 text-blue-500 border border-blue-600/50 rounded-lg"
+                                    >
+                                        <Globe className="w-5 h-5" />
+                                        <span className="font-black uppercase tracking-widest text-xs">Return_to_Nexus</span>
+                                    </Link>
+                                )}
 
                                 {/* Mobile Auth Buttons */}
                                 {!userInfo && (

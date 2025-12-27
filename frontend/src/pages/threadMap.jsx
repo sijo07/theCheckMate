@@ -22,7 +22,9 @@ import {
 } from "lucide-react";
 import {
   useGetAllIncidentsQuery,
+  useResolveIncidentMutation,
 } from "../redux/api/incidentApiSlice";
+import { useSelector } from "react-redux";
 import { BASE_URL } from "../redux/constants";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import { toast } from "react-toastify";
@@ -212,15 +214,21 @@ const ThreadMap = () => {
   const [selectedSeverities, setSelectedSeverities] = useState(['critical', 'high', 'medium', 'low']);
   const [selectedStatuses, setSelectedStatuses] = useState(['active', 'investigating']);
 
+  const { userInfo } = useSelector((state) => state.auth);
   const { data: incidentsData, isLoading } = useGetAllIncidentsQuery(undefined, { pollingInterval: 30000 });
 
   useEffect(() => {
     const socket = io(BASE_URL);
-    socket.on('new-incident', (incident) => {
-      setRealtimeIncidents(prev => [enrichIncident(incident), ...prev]);
-      if (incident?.severity === 'critical') {
-        toast.error(`CRITICAL THREAT DETECTED: ${incident.type.toUpperCase()}`);
-      }
+    socket.on('new-incident', (payload) => {
+      // Backend emits [incident] or incident. Normalizing to array.
+      const incoming = Array.isArray(payload) ? payload : [payload];
+
+      incoming.forEach(incident => {
+        setRealtimeIncidents(prev => [enrichIncident(incident), ...prev]);
+        if (incident?.severity === 'critical') {
+          toast.error(`CRITICAL THREAT DETECTED: ${incident.type.toUpperCase()}`);
+        }
+      });
     });
     return () => socket.disconnect();
   }, []);
@@ -234,7 +242,7 @@ const ThreadMap = () => {
   const incidents = useMemo(() => {
     const base = Array.isArray(incidentsData) ? incidentsData : [];
     const combined = [...realtimeIncidents, ...base.map(enrichIncident)];
-    return Array.from(new Map(combined.map(item => [item._id, item])).values());
+    return Array.from(new Map(combined.filter(i => i._id).map(item => [item._id, item])).values());
   }, [incidentsData, realtimeIncidents]);
 
   const filteredIncidents = useMemo(() => {
@@ -266,13 +274,25 @@ const ThreadMap = () => {
     return Array.from(map.values());
   }, [filteredIncidents]);
 
+  const [resolveIncident] = useResolveIncidentMutation();
+
   const handleIncidentClick = (incident) => {
+    console.log("SELECTED INCIDENT:", incident);
     setSelectedIncident(incident);
   };
 
-  const handleDeployCountermeasure = () => {
-    toast.success("COUNTERMEASURE DEPLOYED: PACKET INTERCEPTION ACTIVE");
-    setSelectedIncident(null);
+  const handleDeployCountermeasure = async () => {
+    if (!selectedIncident || !selectedIncident._id) {
+      toast.error("TARGET LOCK FAILED: INVALID ID");
+      return;
+    }
+    try {
+      await resolveIncident(selectedIncident._id).unwrap();
+      toast.success("COUNTERMEASURE DEPLOYED: THREAT NEUTRALIZED");
+      setSelectedIncident(null);
+    } catch (err) {
+      toast.error("DEPLOYMENT FAILED: UPLINK ERROR");
+    }
   };
 
   const toggleSeverity = (sev) => {
@@ -703,13 +723,15 @@ const ThreadMap = () => {
                     <motion.span className="inline-block w-2 h-3 bg-red-600 ml-1 mb-[-2px]" animate={{ opacity: [0, 1] }} transition={{ repeat: Infinity, duration: 0.8 }} />
                   </div>
 
-                  <button
-                    onClick={handleDeployCountermeasure}
-                    className="w-full py-4 bg-white text-black font-black uppercase tracking-[0.3em] text-[10px] hover:bg-red-600 hover:text-white transition-all shadow-xl flex items-center justify-center gap-3 group"
-                  >
-                    <Shield size={16} className="group-hover:rotate-12 transition-transform" />
-                    Deploy_Active_Countermeasure
-                  </button>
+                  {userInfo?.isAdmin && (
+                    <button
+                      onClick={handleDeployCountermeasure}
+                      className="w-full py-4 bg-white text-black font-black uppercase tracking-[0.3em] text-[10px] hover:bg-red-600 hover:text-white transition-all shadow-xl flex items-center justify-center gap-3 group"
+                    >
+                      <Shield size={16} className="group-hover:rotate-12 transition-transform" />
+                      Deploy_Active_Countermeasure
+                    </button>
+                  )}
                 </div>
               </motion.div>
             </div>

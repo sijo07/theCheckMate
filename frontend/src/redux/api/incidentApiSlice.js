@@ -45,6 +45,22 @@ export const incidentApiSlice = apiSlice.injectEndpoints({
         "DailyAttacks",
       ],
     }),
+
+    resolveIncident: builder.mutation({
+      query: (id) => ({
+        url: `${INCIDENTS_URL}/${id}/resolve`,
+        method: "PUT",
+      }),
+      invalidatesTags: ["Incidents"],
+    }),
+
+    deleteIncident: builder.mutation({
+      query: (id) => ({
+        url: `${INCIDENTS_URL}/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Incidents"],
+    }),
   }),
 });
 
@@ -54,6 +70,8 @@ export const {
   useGetTopTargetedIndustriesQuery,
   useGetAttacksOnThisDayQuery,
   useAddNewIncidentMutation,
+  useResolveIncidentMutation,
+  useDeleteIncidentMutation,
 } = incidentApiSlice;
 
 export default incidentApiSlice;

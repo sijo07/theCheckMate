@@ -1,5 +1,7 @@
 import Service from "../models/serviceModel.js";
 import ServiceRequest from "../models/serviceRequestModel.js";
+import Notification from "../models/notificationModel.js";
+import User from "../models/userModel.js";
 import asyncHandler from "../middlewares/asyncHandler.js";
 
 // @desc    Get all services
@@ -118,6 +120,9 @@ const deleteService = asyncHandler(async (req, res) => {
 // @desc    Get all service requests
 // @route   GET /api/services/requests
 // @access  Private
+// @desc    Get all service requests
+// @route   GET /api/services/requests
+// @access  Private
 const getServiceRequests = asyncHandler(async (req, res) => {
     const { status, urgency } = req.query;
 
@@ -126,8 +131,11 @@ const getServiceRequests = asyncHandler(async (req, res) => {
     if (urgency) filter.urgency = urgency;
 
     // If not admin, only show own requests
-    if (!req.user.isAdmin) {
+    if (req.user && !req.user.isAdmin) {
         filter.requestedBy = req.user._id;
+    } else if (!req.user) {
+        res.status(401);
+        throw new Error("Not authorized");
     }
 
     const requests = await ServiceRequest.find(filter)
@@ -135,6 +143,18 @@ const getServiceRequests = asyncHandler(async (req, res) => {
         .populate("requestedBy", "username email")
         .populate("assignedTo", "username email")
         .sort({ createdAt: -1 });
+
+    res.json(requests);
+});
+
+// @desc    Get pending service requests (Authorizations)
+// @route   GET /api/services/requests/pending
+// @access  Private/Admin
+const getPendingAuthorizations = asyncHandler(async (req, res) => {
+    const requests = await ServiceRequest.find({ status: "pending" })
+        .populate("service", "name category")
+        .populate("requestedBy", "username email")
+        .sort({ createdAt: 1 }); // Oldest first for queue handling
 
     res.json(requests);
 });
@@ -194,6 +214,29 @@ const createServiceRequest = asyncHandler(async (req, res) => {
         io.emit("newServiceRequest", serviceRequest);
     }
 
+    // TRIGGER NOTIFICATION FOR ADMINS
+    const adminUsers = await User.find({ isAdmin: true });
+    const notifications = adminUsers.map(admin => ({
+        user: admin._id,
+        type: 'info',
+        title: 'NEW PROTOCOL REQUEST',
+        message: `Operative has requested: ${req.body.service || 'Unknown Service'}`, // Optimistic service name or ID
+        metadata: { requestId: serviceRequest._id }
+    }));
+    if (notifications.length > 0) {
+        await Notification.insertMany(notifications);
+        // Real-time emit
+        if (io) {
+            adminUsers.forEach(admin => {
+                io.to(admin._id.toString()).emit("notification", {
+                    title: 'NEW PROTOCOL REQUEST',
+                    message: `Operative has requested new service`,
+                    type: 'info'
+                });
+            });
+        }
+    }
+
     res.status(201).json(serviceRequest);
 });
 
@@ -208,13 +251,47 @@ const updateServiceRequest = asyncHandler(async (req, res) => {
         return;
     }
 
+    // Check authorization: Admin or Owner
+    if (!req.user.isAdmin && request.requestedBy.toString() !== req.user._id.toString()) {
+        res.status(403).json({ message: "ACCESS_DENIED: UNAUTHORIZED_REQUEST_MODIFICATION" });
+        return;
+    }
+
     Object.keys(req.body).forEach((key) => {
+        // Restrict fields for non-admins
+        if (!req.user.isAdmin) {
+            const allowedUpdates = ["requirements", "contactInfo", "organization", "urgency", "preferredStartDate", "budget"];
+            // Allow status update ONLY if cancelling
+            if (key === "status" && req.body.status === "cancelled") {
+                // allow
+            } else if (!allowedUpdates.includes(key)) {
+                return;
+            }
+        }
+
         if (key !== "notes") {
             request[key] = req.body[key];
         }
     });
 
     const updatedRequest = await request.save();
+
+    // TRIGGER NOTIFICATION FOR USER IF STATUS CHANGED
+    if (req.body.status && req.body.status !== request.status) {
+        const io = req.app.get("io");
+        const notification = await Notification.create({
+            user: request.requestedBy,
+            type: req.body.status === 'approved' ? 'success' : req.body.status === 'rejected' ? 'warning' : 'info',
+            title: `PROTOCOL UPDATE: ${req.body.status.toUpperCase()}`,
+            message: `Your service request status has been updated to ${req.body.status}.`,
+            metadata: { requestId: updatedRequest._id }
+        });
+
+        if (io) {
+            io.to(request.requestedBy.toString()).emit("notification", notification);
+        }
+    }
+
     res.json(updatedRequest);
 });
 
@@ -287,4 +364,5 @@ export {
     updateServiceRequest,
     addNoteToRequest,
     completeServiceRequest,
+    getPendingAuthorizations,
 };

@@ -1,6 +1,8 @@
 import axios from "axios";
 import asyncHandler from "../middlewares/asyncHandler.js";
 import Incident from "../models/incidentModel.js";
+import Notification from "../models/notificationModel.js";
+import User from "../models/userModel.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -66,6 +68,7 @@ const fetchAndStoreIncidents = asyncHandler(async (io) => {
       industry: industry,
       attackVector: getAttackVectorFromTags(incident.tags || []),
       sourceType: sourceType,
+      severity: generateRandomSeverity(type),
     };
   });
 
@@ -79,10 +82,36 @@ const fetchAndStoreIncidents = asyncHandler(async (io) => {
       try {
         const incident = incidents[incidentIndex];
         // Insert one incident
-        await Incident.create(incident);
+        const newIncident = await Incident.create(incident);
         console.log(`✅ Incident inserted: ${incident.title}`);
 
-        io.emit("new-incident", [incident]); // Emit the inserted incident via WebSocket
+        io.emit("new-incident", [newIncident]); // Emit the inserted incident via WebSocket
+
+        // TRIGGER NOTIFICATION IF CRITICAL
+        if (incident.severity === "critical") {
+          const adminUsers = await User.find({ isAdmin: true });
+
+          // Batch create notifications for performance
+          const notifications = adminUsers.map(admin => ({
+            user: admin._id,
+            type: 'critical',
+            title: 'CRITICAL THREAT DETECTED',
+            message: `Active Threat: ${incident.type} targeting ${incident.target.country}. Immediate attention required.`,
+            relatedIncident: newIncident._id
+          }));
+
+          if (notifications.length > 0) {
+            await Notification.insertMany(notifications);
+            // Real-time emit to admins
+            adminUsers.forEach(admin => {
+              io.to(admin._id.toString()).emit("notification", {
+                title: 'CRITICAL THREAT DETECTED',
+                message: `Active Threat: ${incident.type}`,
+                type: 'critical'
+              });
+            });
+          }
+        }
 
         incidentIndex++; // Move to the next incident
       } catch (error) {
@@ -95,9 +124,9 @@ const fetchAndStoreIncidents = asyncHandler(async (io) => {
   }, 1000); // Insert one incident every 1000ms (1 second)
 });
 
-// ✅ Get All Incidents
+// ✅ Get All Incidents (Active Only)
 const getAllIncidents = asyncHandler(async (req, res) => {
-  const incidents = await Incident.find().sort({ date: -1 });
+  const incidents = await Incident.find({ status: { $ne: "resolved" } }).sort({ date: -1 });
   res.json(incidents);
 });
 
@@ -138,6 +167,33 @@ const getAttacksOnThisDay = asyncHandler(async (req, res) => {
   });
 
   res.json({ attacksOnThisDay: attacksOnThisDayCount });
+});
+
+// ✅ Resolve Incident (Deploy Patch)
+// ✅ Resolve Incident (Deploy Patch)
+const resolveIncident = asyncHandler(async (req, res) => {
+  try {
+    const incident = await Incident.findById(req.params.id);
+
+    if (!incident) {
+      res.status(404);
+      throw new Error("Incident not found");
+    }
+
+    incident.status = "resolved";
+    const updatedIncident = await incident.save();
+
+    // EMIT RESOLVED EVENT
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("incident-resolved", updatedIncident);
+    }
+
+    res.json(updatedIncident);
+  } catch (error) {
+    console.error("❌ RESOLVE ERROR:", error);
+    res.status(500).json({ message: error.message, stack: error.stack });
+  }
 });
 
 // 🛠️ Helper Functions
@@ -214,6 +270,11 @@ const generateRandomSourceType = () => {
   ];
   const randomIndex = Math.floor(Math.random() * sourceTypes.length);
   return sourceTypes[randomIndex];
+};
+
+const generateRandomSeverity = (type) => {
+  if (type === "Ransomware" || type === "DDoS") return Math.random() > 0.5 ? "critical" : "high";
+  return ["low", "medium", "high", "critical"][Math.floor(Math.random() * 4)];
 };
 
 const getAttackVectorFromTags = (tags) => {
@@ -327,4 +388,5 @@ export {
   getTopTargetedCountries,
   getTopTargetedIndustries,
   getAttacksOnThisDay,
+  resolveIncident,
 };

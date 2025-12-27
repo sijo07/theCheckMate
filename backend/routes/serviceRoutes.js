@@ -11,6 +11,7 @@ import {
     updateServiceRequest,
     addNoteToRequest,
     completeServiceRequest,
+    getPendingAuthorizations,
 } from "../controllers/serviceController.js";
 import { authenticate, authorizeAdmin } from "../middlewares/authMiddleware.js";
 
@@ -22,7 +23,8 @@ router.route("/:id").get(getServiceById).put(authenticate, authorizeAdmin, updat
 
 // Service request routes
 router.route("/requests").get(authenticate, getServiceRequests).post(authenticate, createServiceRequest);
-router.route("/requests/:id").get(authenticate, getServiceRequestById).put(authenticate, authorizeAdmin, updateServiceRequest);
+router.route("/requests/pending").get(authenticate, authorizeAdmin, getPendingAuthorizations);
+router.route("/requests/:id").get(authenticate, getServiceRequestById).put(authenticate, updateServiceRequest);
 router.route("/requests/:id/notes").post(authenticate, addNoteToRequest);
 router.route("/requests/:id/complete").put(authenticate, authorizeAdmin, completeServiceRequest);
 

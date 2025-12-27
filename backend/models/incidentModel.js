@@ -17,6 +17,16 @@ const IncidentSchema = new mongoose.Schema(
         "Unknown",
       ],
     },
+    severity: {
+      type: String,
+      default: "medium",
+      enum: ["low", "medium", "high", "critical"],
+    },
+    status: {
+      type: String,
+      enum: ["active", "resolved"],
+      default: "active",
+    },
     source: {
       country: { type: String, required: true, trim: true },
       lat: { type: Number, min: -90, max: 90, required: true },

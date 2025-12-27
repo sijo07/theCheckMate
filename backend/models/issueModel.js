@@ -11,6 +11,11 @@ const issueSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        location: {
+            type: String,
+            required: false,
+            default: "Unknown",
+        },
         type: {
             type: String,
             enum: [

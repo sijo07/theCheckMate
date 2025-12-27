@@ -34,6 +34,11 @@ const Solutions = lazy(() => import("./pages/Solutions"));
 const Issues = lazy(() => import("./pages/Issues"));
 const Services = lazy(() => import("./pages/Services"));
 const Compliance = lazy(() => import("./pages/Compliance"));
+const AdminIssues = lazy(() => import("./pages/admin/AdminIssues"));
+const AdminServices = lazy(() => import("./pages/admin/AdminServices"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminLogs = lazy(() => import("./pages/admin/AdminMisc").then(m => ({ default: m.AdminLogs })));
+const AdminSettings = lazy(() => import("./pages/admin/AdminMisc").then(m => ({ default: m.AdminSettings })));
 
 
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -132,14 +137,6 @@ const router = createBrowserRouter(
         }
       />
       <Route
-        path="solutions"
-        element={
-          <Suspense fallback={<div>Loading...</div>}>
-            <Solutions />
-          </Suspense>
-        }
-      />
-      <Route
         path="issues"
         element={
           <Suspense fallback={<div>Loading...</div>}>
@@ -191,6 +188,54 @@ const router = createBrowserRouter(
           element={
             <Suspense fallback={<div>Loading...</div>}>
               <Dashboard />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/incidents"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <AdminIssues />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/services"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <AdminServices />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <AdminUsers />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/logs"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <AdminLogs />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/settings"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <AdminSettings />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/solutions"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <Solutions />
             </Suspense>
           }
         />
