@@ -148,7 +148,7 @@ const Issues = () => {
                     transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
                 />
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-12 lg:py-8 relative z-10">
 
                     {/* Header & Stats */}
                     <div className="flex flex-col md:flex-row items-end justify-between gap-8 mb-8 border-b border-red-900/30 pb-6">
@@ -157,18 +157,18 @@ const Issues = () => {
                                 <Activity className="w-6 h-6 animate-pulse" />
                                 <span className="text-xs font-bold uppercase tracking-[0.2em]">Live_System_Monitor</span>
                             </div>
-                            <h1 className="text-5xl md:text-6xl font-black uppercase tracking-tighter text-white glitch-text mb-4">
+                            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-white glitch-text mb-4">
                                 Anomaly <span className="text-red-600">Detection</span>
                             </h1>
                         </div>
 
                         {/* HUD Stats */}
-                        <div className="flex gap-4">
-                            <div className="bg-red-950/20 border border-red-500/30 p-4 min-w-[120px]">
+                        <div className="flex flex-wrap gap-4">
+                            <div className="bg-red-950/20 border border-red-500/30 p-4 flex-1 md:flex-none md:min-w-[120px]">
                                 <div className="text-[10px] text-red-400 uppercase tracking-wider mb-1">Critical_Alerts</div>
                                 <div className="text-3xl font-black text-red-500">{stats.critical}</div>
                             </div>
-                            <div className="bg-[#0a0a0b] border border-red-900/30 p-4 min-w-[120px]">
+                            <div className="bg-[#0a0a0b] border border-red-900/30 p-4 flex-1 md:flex-none md:min-w-[120px]">
                                 <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Active_Anomalies</div>
                                 <div className="text-3xl font-black text-white">{stats.active}</div>
                             </div>
@@ -245,24 +245,26 @@ const Issues = () => {
                                                     <div className={`p-3 border ${issue.priority === 'critical' ? 'bg-red-900/20 border-red-500 text-red-500 animate-pulse' : 'bg-gray-900/50 border-gray-700 text-gray-400'}`}>
                                                         <TypeIcon className="w-6 h-6" />
                                                     </div>
-                                                    <div>
-                                                        <div className="flex items-center gap-3 mb-2">
-                                                            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 border ${issue.priority === 'critical' ? 'border-red-500 text-red-500' :
-                                                                issue.priority === 'high' ? 'border-orange-500 text-orange-500' :
-                                                                    'border-emerald-500 text-emerald-500'
-                                                                }`}>
-                                                                {issue.priority}
-                                                            </span>
-                                                            <h3 className="text-xl font-bold text-white uppercase tracking-wider group-hover:text-red-500 transition-colors">
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-3">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 border whitespace-nowrap ${issue.priority === 'critical' ? 'border-red-500 text-red-500' :
+                                                                    issue.priority === 'high' ? 'border-orange-500 text-orange-500' :
+                                                                        'border-emerald-500 text-emerald-500'
+                                                                    }`}>
+                                                                    {issue.priority}
+                                                                </span>
+                                                            </div>
+                                                            <h3 className="text-lg md:text-xl font-bold text-white uppercase tracking-wider group-hover:text-red-500 transition-colors break-words">
                                                                 {issue.title}
                                                             </h3>
                                                         </div>
-                                                        <p className="text-gray-500 text-xs font-bold uppercase tracking-wide leading-relaxed max-w-2xl mb-4">
+                                                        <p className="text-gray-500 text-[10px] md:text-xs font-bold uppercase tracking-wide leading-relaxed max-w-2xl mb-4 break-words">
                                                             {issue.description}
                                                         </p>
 
                                                         {/* Metadata */}
-                                                        <div className="flex items-center gap-6 text-[10px] text-gray-600 font-bold uppercase tracking-widest">
+                                                        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-[10px] text-gray-600 font-bold uppercase tracking-widest">
                                                             <div className="flex items-center gap-2">
                                                                 <Target className="w-3 h-3" />
                                                                 <span>ID: {issue._id.slice(-6)}</span>
@@ -280,11 +282,11 @@ const Issues = () => {
                                                 </div>
 
                                                 {/* Actions */}
-                                                <div className="flex items-center gap-4">
+                                                <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-4 pt-4 md:pt-0 border-t md:border-t-0 border-red-900/10">
                                                     {issue.status !== "resolved" && (
                                                         <button
                                                             onClick={() => handleResolveIssue(issue._id)}
-                                                            className="flex items-center gap-2 px-4 py-2 bg-red-900/10 hover:bg-red-600/20 text-red-500 border border-red-900/50 hover:border-red-500 text-[10px] font-black uppercase tracking-widest transition-all"
+                                                            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-red-900/10 hover:bg-red-600/20 text-red-500 border border-red-900/50 hover:border-red-500 text-[10px] font-black uppercase tracking-widest transition-all"
                                                         >
                                                             <CheckCircle2 className="w-3 h-3" />
                                                             Neutralize
@@ -292,7 +294,7 @@ const Issues = () => {
                                                     )}
                                                     <button
                                                         onClick={() => handleDeleteIssue(issue._id)}
-                                                        className="p-2 text-gray-600 hover:text-red-500 transition-colors"
+                                                        className="p-3 text-gray-600 hover:text-red-500 transition-colors bg-white/05 md:bg-transparent"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
@@ -341,8 +343,8 @@ const Issues = () => {
                                     </div>
                                 </div>
 
-                                <form onSubmit={handleCreateIssue} className="p-8">
-                                    <div className="grid grid-cols-2 gap-6 mb-6">
+                                <form onSubmit={handleCreateIssue} className="p-6 md:p-8">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
                                         <div className="col-span-2">
                                             <label className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-2 block">Anomaly_Subject</label>
                                             <input

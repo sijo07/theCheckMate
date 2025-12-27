@@ -57,7 +57,7 @@ const Home = () => {
   return (
     <div className="bg-[#09090b] text-white overflow-hidden">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center pt-8 px-4 overflow-hidden">
+      <section className="relative min-h-screen flex flex-col items-center lg:justify-center justify-start pt-24 lg:pt-8 px-4 overflow-hidden">
 
 
         {/* Main Hero Content */}

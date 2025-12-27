@@ -237,7 +237,7 @@ const Dashboard = () => {
       </div>
 
       {/* Header Bar */}
-      <header className="fixed top-0 left-0 right-0 h-16 bg-[#0a0a0b]/90 backdrop-blur border-b border-red-900/30 z-40 px-6 flex items-center justify-between">
+      <header className="fixed top-20 left-0 right-0 h-16 bg-[#0a0a0b]/90 backdrop-blur border-b border-red-900/30 z-40 px-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Shield className="w-6 h-6 text-red-600 animate-pulse" />
           <h1 className="text-lg font-black uppercase tracking-[0.2em] text-white">
@@ -262,7 +262,7 @@ const Dashboard = () => {
       </header>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 pt-24 max-w-[1600px] relative z-10">
+      <div className="container mx-auto px-4 pt-4 lg:pt-24 max-w-[1600px] relative z-10">
 
         {/* Top Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

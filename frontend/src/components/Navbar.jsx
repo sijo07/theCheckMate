@@ -90,6 +90,11 @@ const Navbar = () => {
 
     const isHome = location.pathname === "/";
 
+    const handleNavClick = () => {
+        setIsMobileMenuOpen(false);
+        setIsUserMenuOpen(false);
+    };
+
     return (
         <>
             <motion.nav
@@ -130,6 +135,7 @@ const Navbar = () => {
                                         <Link
                                             key={link.path}
                                             to={link.path}
+                                            onClick={handleNavClick}
                                             className={`relative px-1 py-2 transition-colors group whitespace-nowrap ${location.pathname === link.path ? "text-white" : "text-gray-400 hover:text-white"
                                                 }`}
                                         >
@@ -239,7 +245,7 @@ const Navbar = () => {
                                                     <Link
                                                         to="/profile"
                                                         className="flex items-center space-x-3 px-6 py-3 text-gray-200 hover:text-white hover:bg-red-900/10 transition-colors group border-l-2 border-transparent hover:border-red-600"
-                                                        onClick={() => setIsUserMenuOpen(false)}
+                                                        onClick={handleNavClick}
                                                     >
                                                         <User className="w-4 h-4 text-red-500 group-hover:text-red-400 transition-colors" />
                                                         <span className="text-[10px] uppercase tracking-widest font-mono">Profile_Config</span>
@@ -247,7 +253,7 @@ const Navbar = () => {
                                                     <Link
                                                         to="/settings"
                                                         className="flex items-center space-x-3 px-6 py-3 text-gray-200 hover:text-white hover:bg-red-900/10 transition-colors group border-l-2 border-transparent hover:border-red-600"
-                                                        onClick={() => setIsUserMenuOpen(false)}
+                                                        onClick={handleNavClick}
                                                     >
                                                         <Settings className="w-4 h-4 text-red-500 group-hover:text-red-400 transition-colors" />
                                                         <span className="text-[10px] uppercase tracking-widest font-mono">Sys_Settings</span>
@@ -346,7 +352,7 @@ const Navbar = () => {
                                                 ? "bg-red-500/10 text-white border border-red-500/20"
                                                 : "text-gray-300 hover:bg-white/10"
                                                 }`}
-                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            onClick={handleNavClick}
                                         >
                                             <Icon className={`w-5 h-5 ${location.pathname === link.path ? "text-red-500" : ""}`} />
                                             <span className="font-medium">{link.name}</span>
@@ -393,7 +399,7 @@ const Navbar = () => {
                                         <Link
                                             to="/profile"
                                             className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-white/10"
-                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            onClick={handleNavClick}
                                         >
                                             <User className="w-5 h-5 text-red-500" />
                                             <span className="font-medium">Profile_Config</span>
@@ -401,7 +407,7 @@ const Navbar = () => {
                                         <Link
                                             to="/settings"
                                             className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-white/10"
-                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            onClick={handleNavClick}
                                         >
                                             <Settings className="w-5 h-5 text-red-500" />
                                             <span className="font-medium">Sys_Settings</span>
@@ -424,8 +430,8 @@ const Navbar = () => {
                 </AnimatePresence>
             </motion.nav>
 
-            {/* Spacer to prevent content from going under fixed navbar */}
-            <div className="h-20" />
+            {/* Spacer to prevent content from going under fixed navbar, except on home page where we want immersive hero */}
+            {!isHome && <div className="h-20" />}
         </>
     );
 };

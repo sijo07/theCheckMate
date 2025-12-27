@@ -89,7 +89,7 @@ const Services = () => {
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-red-900/10 blur-[100px] rounded-full pointer-events-none" />
                 </div>
 
-                <div className="max-w-[1600px] mx-auto px-4 md:px-8 pt-24 pb-12 relative z-10">
+                <div className="max-w-[1600px] mx-auto px-4 md:px-8 pt-10 lg:pt-24 pb-12 relative z-10">
 
                     {/* --- Header Architecture --- */}
                     <div className="flex flex-col lg:flex-row items-end justify-between gap-8 mb-16 border-b border-white/5 pb-8 relative">
@@ -321,7 +321,7 @@ const Services = () => {
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="relative bg-[#050505] border border-white/10 w-full max-w-4xl h-[80vh] flex flex-col shadow-[0_0_100px_rgba(220,38,38,0.1)] overflow-hidden"
+                            className="relative bg-[#050505] border border-white/10 w-full max-w-4xl max-h-[90vh] lg:h-[80vh] flex flex-col shadow-[0_0_100px_rgba(220,38,38,0.1)] overflow-hidden"
                         >
                             {/* Modal Header */}
                             <div className="h-12 bg-white/5 border-b border-white/10 flex justify-between items-center px-6">
@@ -337,9 +337,9 @@ const Services = () => {
                                 </div>
                             </div>
 
-                            <div className="flex-1 flex overflow-hidden">
+                            <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
                                 {/* Sidebar: Technical Specs */}
-                                <div className="w-1/3 bg-black/50 border-r border-white/5 p-6 space-y-8 overflow-y-auto">
+                                <div className="w-full lg:w-1/3 bg-black/50 border-b lg:border-b-0 lg:border-r border-white/5 p-6 space-y-8 overflow-y-auto">
                                     <div>
                                         <h4 className="text-[10px] text-red-500 font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
                                             <Crosshair size={12} /> Operational_Parameters

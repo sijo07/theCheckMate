@@ -60,8 +60,8 @@ const SignalCard = ({ notification, onRead, onDelete, index }) => {
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start mb-2">
-                        <h4 className={`text-sm font-black uppercase tracking-wider ${notification.read ? 'text-gray-500' : 'text-white'}`}>
+                    <div className="flex flex-wrap justify-between items-start gap-2 mb-2">
+                        <h4 className={`text-sm font-black uppercase tracking-wider ${notification.read ? 'text-gray-500' : 'text-white'} truncate`}>
                             {notification.title}
                         </h4>
                         <span className="text-[9px] font-mono text-gray-600 uppercase tracking-widest whitespace-nowrap">
@@ -170,7 +170,7 @@ const Notifications = () => {
                     style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '50px 50px' }}
                 />
 
-                <div className="max-w-[1600px] mx-auto px-4 md:px-8 py-8 md:py-12 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
+                <div className="max-w-[1600px] mx-auto px-4 md:px-8 pt-4 pb-12 lg:py-12 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 h-full">
 
                     {/* MAIN FEED (8 Cols) */}
                     <div className="lg:col-span-8 flex flex-col h-full">

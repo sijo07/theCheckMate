@@ -161,8 +161,13 @@ const getThreatDetails = (type) => {
 
 const enrichIncident = (inc) => {
   const sourceLoc = inc.source?.lat ? inc.source : getRandomLocation();
-  const targetLoc = inc.location?.lat ? inc.location : getRandomLocation();
-  const finalTarget = (sourceLoc.name === targetLoc.name) ? capitals[(capitals.indexOf(targetLoc) + 1) % capitals.length] : targetLoc;
+  // Backend uses 'target', frontend previously used 'location'. Support both.
+  const targetLoc = inc.target?.lat ? inc.target : (inc.location?.lat ? inc.location : getRandomLocation());
+
+  // Ensure source and target are not the same for visual clarity
+  const finalTarget = (sourceLoc.lat === targetLoc.lat && sourceLoc.lng === targetLoc.lng)
+    ? capitals[(capitals.findIndex(c => c.lat === targetLoc.lat) + 1) % capitals.length]
+    : targetLoc;
 
   const details = getThreatDetails(inc.type);
 
@@ -173,12 +178,12 @@ const enrichIncident = (inc) => {
     icon: details.icon,
     status: inc.status || 'active',
     location: {
-      country: finalTarget.name,
+      country: finalTarget.country || finalTarget.name,
       lat: finalTarget.lat,
       lng: finalTarget.lng
     },
     source: {
-      country: sourceLoc.name,
+      country: sourceLoc.country || sourceLoc.name,
       lat: sourceLoc.lat,
       lng: sourceLoc.lng
     }
@@ -239,6 +244,28 @@ const ThreadMap = () => {
     );
   }, [incidents, selectedSeverities, selectedStatuses]);
 
+  const aggregatedTargets = useMemo(() => {
+    const map = new Map();
+    filteredIncidents.forEach(inc => {
+      const key = `${inc.location.lat},${inc.location.lng}`;
+      if (!map.has(key)) {
+        map.set(key, inc);
+      }
+    });
+    return Array.from(map.values());
+  }, [filteredIncidents]);
+
+  const aggregatedSources = useMemo(() => {
+    const map = new Map();
+    filteredIncidents.forEach(inc => {
+      const key = `${inc.source.lat},${inc.source.lng}`;
+      if (!map.has(key)) {
+        map.set(key, inc);
+      }
+    });
+    return Array.from(map.values());
+  }, [filteredIncidents]);
+
   const handleIncidentClick = (incident) => {
     setSelectedIncident(incident);
   };
@@ -252,8 +279,8 @@ const ThreadMap = () => {
     setSelectedSeverities(prev => prev.includes(sev) ? prev.filter(s => s !== sev) : [...prev, sev]);
   };
 
-  // Arc Path Calculation for 3D effect
-  const getArcPath = (projectedSource, projectedTarget) => {
+  // Arc Path Calculation for 3D effect with bundling support
+  const getArcPath = (projectedSource, projectedTarget, seed = 0) => {
     const [x1, y1] = projectedSource;
     const [x2, y2] = projectedTarget;
 
@@ -262,9 +289,12 @@ const ThreadMap = () => {
     const dist = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 
     // Lift the arc based on distance, but capped
-    const lift = Math.min(dist * 0.4, 80);
-    const controlX = midX;
-    const controlY = midY - lift;
+    const lift = Math.min(dist * 0.4, 120); // Increased max lift slightly
+
+    // Add bundling offset based on seed
+    const offset = (seed % 20) - 10;
+    const controlX = midX + (offset * 0.5);
+    const controlY = midY - lift + offset;
 
     return `M ${x1},${y1} Q ${controlX},${controlY} ${x2},${y2}`;
   };
@@ -279,7 +309,7 @@ const ThreadMap = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#020202] text-white pt-24 px-4 sm:px-6 lg:px-8 pb-12 font-mono relative overflow-hidden selection:bg-red-500 selection:text-white">
+    <div className="min-h-screen bg-[#020202] text-white pt-10 lg:pt-24 px-4 sm:px-6 lg:px-8 pb-12 font-mono relative overflow-hidden selection:bg-red-500 selection:text-white">
       <style>{mapStyles}</style>
 
       {/* Background Layers */}
@@ -550,11 +580,13 @@ const ThreadMap = () => {
                 // IMPORTANT: react-simple-maps Line doesn't support Q curves easily without custom projection.
                 // So we'll use a standard Line for geometry but styling it heavily.
 
+                const bundleSeed = parseInt(incident._id?.slice(-4), 16) || idx;
+
                 return (
                   <React.Fragment key={idx}>
                     {/* Base Thread Line */}
                     <path
-                      d={getArcPath([(src.lng + 180) * 2.22, (90 - src.lat) * 2.5], [(dst.lng + 180) * 2.22, (90 - dst.lat) * 2.5])}
+                      d={getArcPath([(src.lng + 180) * 2.22, (90 - src.lat) * 2.5], [(dst.lng + 180) * 2.22, (90 - dst.lat) * 2.5], bundleSeed)}
                       className="threat-arc"
                       stroke={incident.color}
                       strokeWidth={hoveredIncident?._id === incident._id ? 1.2 : 0.4}
@@ -565,7 +597,7 @@ const ThreadMap = () => {
                     />
                     {/* Animated Data Packets (Cyber Pulse) */}
                     <path
-                      d={getArcPath([(src.lng + 180) * 2.22, (90 - src.lat) * 2.5], [(dst.lng + 180) * 2.22, (90 - dst.lat) * 2.5])}
+                      d={getArcPath([(src.lng + 180) * 2.22, (90 - src.lat) * 2.5], [(dst.lng + 180) * 2.22, (90 - dst.lat) * 2.5], bundleSeed)}
                       className="data-packet"
                       stroke={incident.color}
                       strokeWidth={incident.severity === 'critical' ? 2 : 1.4}
@@ -573,7 +605,7 @@ const ThreadMap = () => {
                       onMouseEnter={() => setHoveredIncident(incident)}
                       onMouseLeave={() => setHoveredIncident(null)}
                       style={{
-                        animationDuration: `${incident.severity === 'critical' ? 0.8 : 1.5 + Math.random()}s`,
+                        animationDuration: `${incident.severity === 'critical' ? 0.8 : 1.5 + (bundleSeed % 5) * 0.1}s`,
                         filter: `drop-shadow(0 0 3px ${incident.color})`
                       }}
                     />
@@ -583,39 +615,34 @@ const ThreadMap = () => {
             </g>
 
             {/* Nodes */}
-            {filteredIncidents.map((incident, idx) => {
-              const src = incident.source;
-              const dst = incident.location;
-              if (!dst?.lat) return null;
+            {/* Render unique Source Points */}
+            {aggregatedSources.map((incident, idx) => (
+              <Marker key={`src-${idx}`} coordinates={[incident.source.lng, incident.source.lat]} className="pointer-events-none">
+                <circle r={1.2} fill={incident.color} className="opacity-40" />
+              </Marker>
+            ))}
+
+            {/* Render unique Target Points */}
+            {aggregatedTargets.map((incident, idx) => {
               const isSelected = selectedIncident?._id === incident._id;
               const isHovered = hoveredIncident?._id === incident._id;
 
               return (
-                <React.Fragment key={idx}>
-                  {/* Source Point (Origin) */}
-                  {src?.lat && (
-                    <Marker coordinates={[src.lng, src.lat]} className="pointer-events-none">
-                      <circle r={1} fill={incident.color} className="opacity-30" />
-                    </Marker>
+                <Marker
+                  key={`dst-${idx}`}
+                  coordinates={[incident.location.lng, incident.location.lat]}
+                  onClick={() => handleIncidentClick(incident)}
+                  onMouseEnter={() => setHoveredIncident(incident)}
+                  onMouseLeave={() => setHoveredIncident(null)}
+                  className="cursor-pointer group"
+                >
+                  {/* Node Target */}
+                  <circle r={isHovered || isSelected ? 4 : 2} fill={incident.color} filter="url(#glow)" className="transition-all duration-300" />
+                  {/* Pulse effect for critical or selected */}
+                  {(incident.severity === 'critical' || isSelected) && (
+                    <circle r={isSelected ? 10 : 8} fill="none" stroke={incident.color} strokeWidth={0.5} className="animate-ping opacity-20" />
                   )}
-
-                  {/* Target Point (Impact) */}
-                  <Marker
-                    key={idx}
-                    coordinates={[dst.lng, dst.lat]}
-                    onClick={() => handleIncidentClick(incident)}
-                    onMouseEnter={() => setHoveredIncident(incident)}
-                    onMouseLeave={() => setHoveredIncident(null)}
-                    className="cursor-pointer group"
-                  >
-                    {/* Node Target */}
-                    <circle r={isHovered || isSelected ? 4 : 2} fill={incident.color} filter="url(#glow)" className="transition-all duration-300" />
-                    {/* Pulse effect for critical or selected */}
-                    {(incident.severity === 'critical' || isSelected) && (
-                      <circle r={isSelected ? 10 : 8} fill="none" stroke={incident.color} strokeWidth={0.5} className="animate-ping opacity-20" />
-                    )}
-                  </Marker>
-                </React.Fragment>
+                </Marker>
               );
             })}
           </ComposableMap>

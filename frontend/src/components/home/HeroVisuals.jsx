@@ -71,7 +71,7 @@ const HeroVisuals = () => {
 
             {/* Floating UI HUD elements - Centered Diagnostic Panel */}
             <motion.div
-                className="absolute top-1/2 left-1/2 w-80 p-6 bg-black/90 backdrop-blur-xl border border-red-500/30 hidden md:block z-30 shadow-[0_0_50px_rgba(239,68,68,0.15)] group overflow-hidden"
+                className="absolute top-1/2 left-1/2 w-[280px] md:w-80 p-5 md:p-6 bg-black/90 backdrop-blur-xl border border-red-500/30 z-30 shadow-[0_0_50px_rgba(239,68,68,0.15)] group overflow-hidden"
                 style={{
                     clipPath: "polygon(0 0, 100% 0, 100% 85%, 90% 100%, 0 100%)"
                 }}
