@@ -108,7 +108,7 @@ const ThreatIntelligence = () => {
 
                 <div className="relative z-10">
                     {/* Header HUD */}
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
                         <motion.div
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -138,7 +138,7 @@ const ThreatIntelligence = () => {
                     </div>
 
                     {/* Stats HUD Grid */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                         {[
                             { title: "Global Threats", value: stats.total, label: "Total_Signals", icon: Shield },
                             { title: "Critical Alert", value: stats.critical, label: "Lethal_Vectors", icon: AlertTriangle, critical: true },

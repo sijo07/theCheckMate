@@ -148,10 +148,10 @@ const Issues = () => {
                     transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
                 />
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
 
                     {/* Header & Stats */}
-                    <div className="flex flex-col md:flex-row items-end justify-between gap-8 mb-12 border-b border-red-900/30 pb-8">
+                    <div className="flex flex-col md:flex-row items-end justify-between gap-8 mb-8 border-b border-red-900/30 pb-6">
                         <div>
                             <div className="flex items-center gap-3 text-red-500 mb-2">
                                 <Activity className="w-6 h-6 animate-pulse" />
@@ -176,7 +176,7 @@ const Issues = () => {
                     </div>
 
                     {/* Filter Console */}
-                    <div className="bg-[#0a0a0b] border border-red-900/30 p-1 mb-12 flex flex-col md:flex-row gap-0">
+                    <div className="bg-[#0a0a0b] border border-red-900/30 p-1 mb-8 flex flex-col md:flex-row gap-0">
                         <div className="flex-1 flex items-center relative border-b md:border-b-0 md:border-r border-red-900/30">
                             <Search className="absolute left-4 w-4 h-4 text-red-500" />
                             <input

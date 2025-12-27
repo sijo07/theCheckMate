@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="#000" filter="url(#glow)" />
+  <circle cx="12" cy="12" r="3" fill="#ef4444" opacity="0.8" />
+  <path d="M12 2v4" stroke="#ef4444" opacity="0.5" />
+  <path d="M12 18v4" stroke="#ef4444" opacity="0.5" />
+  <path d="M2 12h4" stroke="#ef4444" opacity="0.5" />
+  <path d="M18 12h4" stroke="#ef4444" opacity="0.5" />
+</svg>

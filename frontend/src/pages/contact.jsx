@@ -74,9 +74,9 @@ const Contact = () => {
         />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-24">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-12">
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 border-b border-white/10 pb-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 border-b border-white/10 pb-6">
           <div>
             <div className="flex items-center space-x-2 text-red-500 mb-2">
               <Radio className="w-4 h-4 animate-pulse" />

@@ -51,7 +51,7 @@ connectDB()
 
     // ✅ Routes
     app.use("/api/users", userRoutes);
-    app.use("/incidents", incidentRoutes);
+    app.use("/api/incidents", incidentRoutes);
     app.use("/api/notifications", notificationRoutes);
     app.use("/api/reports", reportRoutes);
     app.use("/api/solutions", solutionRoutes);

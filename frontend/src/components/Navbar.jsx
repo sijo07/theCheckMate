@@ -7,8 +7,7 @@ import { useGetUnreadCountQuery } from "../redux/api/notificationApiSlice";
 import { logout } from "../redux/features/authSlice";
 import socket from "../utils/socket";
 import {
-    Menu,
-    X,
+
     Bell,
     User,
     Settings,
@@ -41,15 +40,20 @@ const Navbar = () => {
 
     // Handle real-time notification updates
     useEffect(() => {
-        if (userInfo?._id) {
-            socket.emit("join", userInfo._id);
-            socket.on("notification", () => {
-                refetchUnread();
-            });
+        if (userInfo?._id && socket) {
+            try {
+                socket.emit("join", userInfo._id);
+                const handleNotification = () => {
+                    refetchUnread();
+                };
+                socket.on("notification", handleNotification);
 
-            return () => {
-                socket.off("notification");
-            };
+                return () => {
+                    socket.off("notification", handleNotification);
+                };
+            } catch (error) {
+                console.error("Socket Connection Failed:", error);
+            }
         }
     }, [userInfo, refetchUnread]);
 
@@ -98,9 +102,9 @@ const Navbar = () => {
                 transition={{ duration: 0.5 }}
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
-                        {/* Logo - Left */}
-                        <div className="flex items-center">
+                    <div className="flex items-center justify-between h-20">
+                        {/* Left: Logo (Takes equal space to balance Right) */}
+                        <div className="flex-1 flex items-center justify-start">
                             <Link to="/" className="flex items-center space-x-2 group">
                                 <motion.div
                                     className="p-2 rounded-lg bg-red-500/10 border border-red-500/50"
@@ -115,9 +119,10 @@ const Navbar = () => {
                             </Link>
                         </div>
 
-                        {/* Desktop Navigation - Center */}
-                        <div className="hidden md:flex items-center justify-center flex-1">
-                            <div className="flex items-center space-x-6 text-[11px] font-bold uppercase tracking-widest">
+                        {/* Center: Desktop Navigation (Centered on screen) */}
+
+                        <div className="hidden lg:flex items-center justify-center px-6">
+                            <div className="flex items-center gap-4 text-[11px] font-bold uppercase tracking-widest">
                                 {navLinks.map((link) => {
                                     if (link.adminOnly && !userInfo?.isAdmin) return null;
                                     const Icon = link.icon;
@@ -146,8 +151,9 @@ const Navbar = () => {
                             </div>
                         </div>
 
-                        {/* Right Section - Right Tools */}
-                        <div className="flex items-center justify-end space-x-2 md:space-x-6">
+                        {/* Right: Tools (Takes equal space to balance Left) */}
+                        {/* Right: Tools (Takes equal space to balance Left) */}
+                        <div className="flex-1 flex items-center justify-end space-x-2 md:space-x-4">
                             {/* Notification Bell */}
                             {userInfo && (
                                 <motion.button
@@ -419,7 +425,7 @@ const Navbar = () => {
             </motion.nav>
 
             {/* Spacer to prevent content from going under fixed navbar */}
-            <div className="h-16" />
+            <div className="h-20" />
         </>
     );
 };

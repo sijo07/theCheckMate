@@ -98,7 +98,7 @@ const Settings = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-[#050506] text-white font-mono relative overflow-hidden flex items-center justify-center p-4">
+        <div className="min-h-screen bg-[#050506] text-white font-mono relative overflow-hidden flex items-start justify-center p-4">
             {/* Background Cyber Grid */}
             <div className="absolute inset-0 opacity-10 pointer-events-none"
                 style={{

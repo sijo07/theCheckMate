@@ -33,6 +33,7 @@ const Reports = lazy(() => import("./pages/Reports"));
 const Solutions = lazy(() => import("./pages/Solutions"));
 const Issues = lazy(() => import("./pages/Issues"));
 const Services = lazy(() => import("./pages/Services"));
+const Compliance = lazy(() => import("./pages/Compliance"));
 
 
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -151,6 +152,14 @@ const router = createBrowserRouter(
         element={
           <Suspense fallback={<div>Loading...</div>}>
             <Services />
+          </Suspense>
+        }
+      />
+      <Route
+        path="compliance"
+        element={
+          <Suspense fallback={<div>Loading...</div>}>
+            <Compliance />
           </Suspense>
         }
       />

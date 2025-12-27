@@ -28,7 +28,7 @@ const fetchAndStoreIncidents = asyncHandler(async (io) => {
 
   const incidents = response.data.results.map((incident) => {
     const sourceLocation = extractCountry(incident);
-    const targetLocation = extractCountry(incident) || generateRandomLocation(); 
+    const targetLocation = extractCountry(incident) || generateRandomLocation();
 
     const validTypes = [
       "DDoS",
@@ -97,7 +97,7 @@ const fetchAndStoreIncidents = asyncHandler(async (io) => {
 
 // ✅ Get All Incidents
 const getAllIncidents = asyncHandler(async (req, res) => {
-  const incidents = await Incident.find().sort({ date: -1 }).limit(100);
+  const incidents = await Incident.find().sort({ date: -1 });
   res.json(incidents);
 });
 

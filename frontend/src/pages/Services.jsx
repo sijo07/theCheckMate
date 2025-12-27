@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
     useGetServicesQuery,
     useCreateServiceRequestMutation,
@@ -7,21 +7,18 @@ import {
 import AnimatedPage from "../components/AnimatedPage";
 import { CardSkeleton } from "../components/LoadingSkeleton";
 import {
-    Search,
     Shield,
-    Star,
-    Clock,
-    DollarSign,
-    CheckCircle,
-    Send,
-    Package,
     Terminal,
     Lock,
-    Cpu,
-    Activity,
     AlertTriangle,
-    Database,
-    Globe
+    Zap,
+    Search,
+    ChevronDown,
+    Activity,
+    Cpu,
+    Crosshair,
+    Server,
+    Wifi
 } from "lucide-react";
 import { toast } from "react-toastify";
 
@@ -31,7 +28,7 @@ const Services = () => {
     const [selectedService, setSelectedService] = useState(null);
     const [showRequestModal, setShowRequestModal] = useState(false);
 
-    const { data: services, isLoading } = useGetServicesQuery({
+    const { data: services = [], isLoading } = useGetServicesQuery({
         search: searchTerm,
         category: categoryFilter,
         status: "active",
@@ -48,7 +45,6 @@ const Services = () => {
         { value: "incident_response", label: "INCIDENT_RESPONSE" },
     ];
 
-
     const handleRequestService = (service) => {
         setSelectedService(service);
         setShowRequestModal(true);
@@ -58,7 +54,7 @@ const Services = () => {
         try {
             await createServiceRequest({
                 serviceId: selectedService._id,
-                status: 'pending' // Default stat
+                status: 'pending'
             }).unwrap();
 
             toast.success(`PROTOCOL_INITIATED: ${selectedService.name.toUpperCase()}`);
@@ -70,236 +66,386 @@ const Services = () => {
 
     return (
         <AnimatedPage variant="fadeIn">
-            <div className="min-h-screen bg-[#050506] text-white font-mono relative overflow-hidden">
-                {/* Background Cyber Grid & Laser - Keeping existing code... */}
-                <div className="absolute inset-0 opacity-10 pointer-events-none"
-                    style={{
-                        backgroundImage: 'linear-gradient(rgba(185, 28, 28, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(185, 28, 28, 0.1) 1px, transparent 1px)',
-                        backgroundSize: '40px 40px'
-                    }}
-                />
+            <div className="min-h-screen bg-[#020202] text-gray-300 font-mono relative overflow-hidden pb-20 selection:bg-red-500/30 selection:text-red-200">
+                {/* --- Cyber Environment Background --- */}
+                <div className="absolute inset-0 pointer-events-none">
+                    {/* Static Grid */}
+                    <div
+                        className="absolute inset-0 opacity-[0.03]"
+                        style={{
+                            backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)',
+                            backgroundSize: '40px 40px'
+                        }}
+                    />
 
-                <motion.div
-                    className="absolute left-0 right-0 h-1 bg-red-600/10 z-0 pointer-events-none shadow-[0_0_20px_#ef4444]"
-                    animate={{ top: ["0%", "100%"] }}
-                    transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-                />
+                    {/* Moving Scanline */}
+                    <motion.div
+                        className="absolute w-full h-[2px] bg-red-600/20 shadow-[0_0_20px_rgba(220,38,38,0.5)] z-0"
+                        animate={{ top: ['-10%', '110%'] }}
+                        transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
+                    />
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
+                    {/* Radial Glow */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-red-900/10 blur-[100px] rounded-full pointer-events-none" />
+                </div>
 
-                    {/* Header Section */}
-                    <div className="flex flex-col md:flex-row items-end justify-between gap-8 mb-16 border-b border-red-900/30 pb-8">
+                <div className="max-w-[1600px] mx-auto px-4 md:px-8 pt-24 pb-12 relative z-10">
+
+                    {/* --- Header Architecture --- */}
+                    <div className="flex flex-col lg:flex-row items-end justify-between gap-8 mb-16 border-b border-white/5 pb-8 relative">
+                        {/* Decorative Header Lines */}
+                        <div className="absolute -bottom-px left-0 w-24 h-1 bg-red-600" />
+                        <div className="absolute -bottom-px right-0 w-8 h-1 bg-white/20" />
+
                         <div>
                             <div className="flex items-center gap-3 text-red-500 mb-2">
-                                <Shield className="w-6 h-6 animate-pulse" />
-                                <span className="text-xs font-bold uppercase tracking-[0.2em]">Global_Sec_Ops</span>
+                                <Activity className="w-4 h-4 animate-pulse" />
+                                <span className="text-[10px] font-bold uppercase tracking-[0.4em]">Countermeasures_Database</span>
                             </div>
-                            <h1 className="text-5xl md:text-6xl font-black uppercase tracking-tighter text-white glitch-text mb-4">
-                                Advanced <span className="text-red-600">Defense</span>
+                            <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter text-white glitch-text mb-4">
+                                Offensive<span className="text-red-600">.Ops</span>
                             </h1>
-                            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest max-w-lg leading-relaxed">
-                                Deploy offensive and defensive cyber capabilities. Select a protocol to initiate security countermeasures.
+                            <p className="text-gray-500 text-xs font-mono uppercase tracking-widest max-w-xl leading-relaxed">
+                                deploy advanced cybersecurity protocols. select targets for autonomous neutralization.
+                                unauthorized access is strictly monitored.
                             </p>
                         </div>
 
-                        {/* Stats HUD */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-red-900/10 border border-red-900/30 p-4 min-w-[140px]">
-                                <div className="text-[10px] text-red-400 uppercase tracking-wider mb-1">Active_Threats</div>
-                                <div className="text-2xl font-black text-white">4,092</div>
+                        {/* Header Stats Holo-Display */}
+                        <div className="flex gap-1 md:gap-4">
+                            <div className="bg-white/5 border border-white/10 p-4 min-w-[140px] relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-1 opacity-50">
+                                    <Cpu className="w-4 h-4 text-red-500/50" />
+                                </div>
+                                <span className="block text-[9px] text-gray-500 uppercase tracking-widest mb-1">Sys_Load</span>
+                                <div className="flex items-end gap-2">
+                                    <span className="text-3xl font-black text-white">42<span className="text-sm text-red-500">%</span></span>
+                                    <div className="h-6 flex items-end gap-[2px] opacity-50">
+                                        {[4, 8, 3, 7, 2, 9].map((h, i) => (
+                                            <motion.div
+                                                key={i}
+                                                className="w-1 bg-red-500"
+                                                animate={{ height: ['20%', `${h * 10}%`, '40%'] }}
+                                                transition={{ duration: 2, repeat: Infinity, delay: i * 0.1 }}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
-                            <div className="bg-red-900/10 border border-red-900/30 p-4 min-w-[140px]">
-                                <div className="text-[10px] text-red-400 uppercase tracking-wider mb-1">System_Status</div>
-                                <div className="text-2xl font-black text-emerald-500">SECURE</div>
+                            <div className="bg-white/5 border border-white/10 p-4 min-w-[140px] relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-1 opacity-50">
+                                    <Server className="w-4 h-4 text-emerald-500/50" />
+                                </div>
+                                <span className="block text-[9px] text-gray-500 uppercase tracking-widest mb-1">Nodes_Active</span>
+                                <div className="flex items-end gap-2">
+                                    <span className="text-3xl font-black text-white">892</span>
+                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mb-2" />
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Command Bar */}
-                    <div className="bg-[#0a0a0b] border border-red-900/30 p-1 mb-12 flex flex-col md:flex-row items-stretch">
-                        <div className="flex-1 flex items-center relative border-b md:border-b-0 md:border-r border-red-900/30">
-                            <Terminal className="absolute left-4 w-5 h-5 text-red-500" />
-                            <input
-                                type="text"
-                                placeholder="SEARCH_PROTOCOLS..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                autoComplete="off"
-                                className="w-full bg-transparent text-white text-xs font-bold uppercase tracking-widest py-4 pl-12 focus:outline-none placeholder-gray-700"
-                            />
+                    {/* --- Command Interface --- */}
+                    <div className="flex flex-col md:flex-row gap-4 mb-12 bg-black/40 backdrop-blur-sm p-4 border border-white/5 rounded-lg">
+                        {/* Search Input */}
+                        <div className="relative flex-1 group">
+                            <div className="absolute bottom-0 left-0 w-full h-[1px] bg-white/20 group-focus-within:bg-red-600 transition-colors" />
+                            <div className="relative flex items-center px-4 py-3 bg-white/5 group-hover:bg-white/10 transition-colors">
+                                <span className="text-red-500 font-bold mr-4 font-mono text-xs">{">"}</span>
+                                <input
+                                    type="text"
+                                    placeholder="INIT_QUERY_SEQUENCE..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full bg-transparent text-white text-xs font-bold uppercase tracking-widest focus:outline-none placeholder-gray-600"
+                                />
+                                <Search className="w-4 h-4 text-gray-500 group-focus-within:text-red-500 transition-colors" />
+                            </div>
                         </div>
-                        <div className="flex items-center px-2">
-                            <select
-                                value={categoryFilter}
-                                onChange={(e) => setCategoryFilter(e.target.value)}
-                                className="bg-transparent text-red-500 text-xs font-bold uppercase tracking-widest py-2 px-4 focus:outline-none cursor-pointer hover:bg-red-900/10 rounded transition-colors"
-                            >
-                                {categories.map((cat) => (
-                                    <option key={cat.value} value={cat.value} className="bg-[#0a0a0b] text-gray-400">
-                                        {cat.label}
-                                    </option>
-                                ))}
-                            </select>
+
+                        {/* Filter Dropdown */}
+                        <div className="relative w-full md:w-72">
+                            <div className="h-full bg-white/5 hover:bg-white/10 transition-colors flex items-center px-4 border-l border-white/5 py-3 cursor-pointer group relative">
+                                <select
+                                    value={categoryFilter}
+                                    onChange={(e) => setCategoryFilter(e.target.value)}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                >
+                                    {categories.map((cat) => (
+                                        <option key={cat.value} value={cat.value}>{cat.label}</option>
+                                    ))}
+                                </select>
+                                <div className="flex items-center justify-between w-full pointer-events-none">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 group-hover:text-white transition-colors">
+                                        FILTER: <span className="text-red-500">{categoryFilter ? categories.find(c => c.value === categoryFilter)?.label : "ALL_SYSTEMS"}</span>
+                                    </span>
+                                    <ChevronDown className="w-3 h-3 text-red-500" />
+                                </div>
+                                {/* Corner Accents */}
+                                <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-red-500/30 group-hover:border-red-500 transition-colors" />
+                                <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-red-500/30 group-hover:border-red-500 transition-colors" />
+                            </div>
                         </div>
                     </div>
 
-                    {/* Services Grid */}
+                    {/* --- Services Grid --- */}
                     {isLoading ? (
                         <CardSkeleton count={6} />
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            <AnimatePresence>
-                                {services?.map((service, index) => (
-                                    <motion.div
-                                        key={service._id}
-                                        initial={{ opacity: 0, scale: 0.95 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ delay: index * 0.1 }}
-                                        className="bg-[#0a0a0b] border border-red-900/20 hover:border-red-500/50 group relative overflow-hidden transition-all duration-300"
-                                    >
-                                        <div className="absolute inset-0 bg-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                                        <div className="h-1 w-full bg-gradient-to-r from-red-600/0 via-red-600/50 to-red-600/0 opacity-50" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {Array.isArray(services) && services.map((service, index) => (
+                                <motion.div
+                                    key={service._id}
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: index * 0.05 }}
+                                    onClick={() => handleRequestService(service)}
+                                    className="group relative h-[320px] bg-[#080808] border border-white/5 hover:border-red-600/50 transition-all duration-300 cursor-pointer overflow-hidden flex flex-col"
+                                >
+                                    {/* Hover Reveal Background */}
+                                    <div className="absolute inset-0 bg-red-900/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                    <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        <Crosshair className="w-5 h-5 text-red-500 animate-[spin_3s_linear_infinite]" />
+                                    </div>
 
-                                        <div className="p-8">
-                                            <div className="flex justify-between items-start mb-6">
-                                                <div className="p-3 bg-red-900/10 border border-red-500/20 group-hover:scale-110 transition-transform duration-300">
-                                                    <Lock className="w-6 h-6 text-red-500" />
-                                                </div>
-                                                <div className="text-right">
-                                                    <div className="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-1">SEC_LEVEL_{Math.floor(service.rating.average)}</div>
-                                                    <div className="flex items-center justify-end gap-1">
-                                                        {[...Array(5)].map((_, i) => (
-                                                            <div key={i} className={`w-1 h-1 rounded-full ${i < Math.floor(service.rating.average) ? 'bg-red-500' : 'bg-gray-800'}`} />
-                                                        ))}
-                                                    </div>
-                                                </div>
+                                    {/* Content Container */}
+                                    <div className="p-8 relative z-10 flex flex-col h-full">
+                                        {/* Icon & ID */}
+                                        <div className="flex justify-between items-start mb-6">
+                                            <div className="w-12 h-12 bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-red-600 group-hover:text-black group-hover:border-red-600 transition-all duration-300 text-gray-400">
+                                                {service.category === 'threat_analysis' ? <Activity size={20} /> :
+                                                    service.category === 'penetration_testing' ? <Zap size={20} /> :
+                                                        service.category === 'security_audit' ? <Shield size={20} /> :
+                                                            <Lock size={20} />}
                                             </div>
-
-                                            <h3 className="text-xl font-black uppercase tracking-wider text-white mb-3 group-hover:text-red-500 transition-colors">
-                                                {service.name}
-                                            </h3>
-                                            <p className="text-gray-500 text-xs font-bold uppercase tracking-wide leading-relaxed mb-6 line-clamp-3">
-                                                {service.description}
-                                            </p>
-
-                                            <div className="grid grid-cols-2 gap-px bg-red-900/20 border border-red-900/20 mb-6">
-                                                <div className="bg-[#0a0a0b] p-3 text-center">
-                                                    <div className="text-[8px] text-gray-500 uppercase tracking-widest mb-1">Cost_Basis</div>
-                                                    <div className="text-xs font-bold text-white">
-                                                        {service.pricing?.type === "fixed" ? `$${service.pricing.amount}` : "CUSTOM"}
-                                                    </div>
-                                                </div>
-                                                <div className="bg-[#0a0a0b] p-3 text-center">
-                                                    <div className="text-[8px] text-gray-500 uppercase tracking-widest mb-1">Est_Time</div>
-                                                    <div className="text-xs font-bold text-white">
-                                                        {service.duration ? `${service.duration.value} ${service.duration.unit}` : "VARIES"}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <button
-                                                onClick={() => handleRequestService(service)}
-                                                className="w-full py-4 bg-red-600 hover:bg-red-500 text-white text-xs font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 group-hover:shadow-[0_0_20px_rgba(220,38,38,0.4)]"
-                                            >
-                                                <Terminal className="w-4 h-4" />
-                                                Deploy_Protocol
-                                            </button>
+                                            <span className="text-[9px] font-mono text-gray-600 uppercase">
+                                                ID_0{index + 1}
+                                            </span>
                                         </div>
 
-                                        <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-red-500/50" />
-                                        <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-red-500/50" />
-                                        <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-red-500/50" />
-                                        <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-red-500/50" />
-                                    </motion.div>
-                                ))}
+                                        {/* Titles */}
+                                        <div className="mb-4">
+                                            <h3 className="text-xl font-black uppercase text-white mb-2 leading-none group-hover:text-red-500 transition-colors">
+                                                {service.name}
+                                            </h3>
+                                            <div className="h-[2px] w-12 bg-white/10 group-hover:w-full group-hover:bg-red-600 transition-all duration-500" />
+                                        </div>
 
-                                {!isLoading && services?.length === 0 && (
-                                    <div className="col-span-full py-20 text-center border border-red-900/30 bg-[#0a0a0b]">
-                                        <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4 animate-pulse" />
-                                        <h3 className="text-xl font-black uppercase tracking-widest text-white mb-2">No_Protocols_Found</h3>
-                                        <p className="text-gray-500 text-xs uppercase tracking-widest">Adjust search parameters or clear filters.</p>
+                                        {/* Description */}
+                                        <p className="text-[10px] text-gray-500 uppercase font-mono leading-relaxed mb-auto line-clamp-3">
+                                            {service.description}
+                                        </p>
+
+                                        {/* Specs */}
+                                        <div className="grid grid-cols-2 gap-px bg-white/10 border border-white/5 mt-6">
+                                            <div className="bg-[#080808] p-3 group-hover:bg-[#0c0c0c] transition-colors">
+                                                <span className="block text-[8px] text-gray-600 uppercase mb-1">Cost_Basis</span>
+                                                <span className="block text-xs font-bold text-white">
+                                                    {service.pricing?.type === "fixed" ? `$${service.pricing.amount}` : "Dynamic"}
+                                                </span>
+                                            </div>
+                                            <div className="bg-[#080808] p-3 group-hover:bg-[#0c0c0c] transition-colors">
+                                                <span className="block text-[8px] text-gray-600 uppercase mb-1">Duration</span>
+                                                <span className="block text-xs font-bold text-white">
+                                                    {service.duration ? `${service.duration.value} ${service.duration.unit}` : "Flexible"}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
-                                )}
-                            </AnimatePresence>
+
+                                    {/* Action Strip (Visible on Hover) */}
+                                    <div className="absolute bottom-0 left-0 w-full h-1 bg-red-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                                </motion.div>
+                            ))}
                         </div>
                     )}
                 </div>
 
-                {/* Tactical Request Modal */}
-                <AnimatePresence>
-                    {showRequestModal && selectedService && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                onClick={() => setShowRequestModal(false)}
-                                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-                            />
+                {/* --- Global Operations Feed (New Section) --- */}
+                <div className="border-t border-white/5 bg-black/50 backdrop-blur-sm mt-12 py-12">
+                    <div className="max-w-[1600px] mx-auto px-4 md:px-8">
+                        <div className="flex items-center gap-4 mb-8">
+                            <Activity className="w-5 h-5 text-red-500 animate-pulse" />
+                            <h3 className="text-sm font-black uppercase tracking-[0.3em] text-white">Global_Operations_Stream</h3>
+                        </div>
 
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                                className="relative bg-[#0a0a0b] border border-red-600 w-full max-w-lg shadow-[0_0_50px_rgba(220,38,38,0.2)]"
-                            >
-                                <div className="p-1 bg-red-600 flex justify-between items-center text-black px-4 py-2 mb-4">
-                                    <span className="text-xs font-black uppercase tracking-widest">Protocol_Authorization</span>
-                                    <div className="flex gap-1">
-                                        <div className="w-2 h-2 bg-black rounded-full" />
-                                        <div className="w-2 h-2 bg-black/50 rounded-full" />
-                                    </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                            {/* Feed Column */}
+                            <div className="lg:col-span-3 bg-[#050505] border border-white/5 p-6 h-64 overflow-hidden relative">
+                                <div className="absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-[#050505] to-transparent z-10" />
+                                <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-[#050505] to-transparent z-10" />
+
+                                <motion.div
+                                    className="space-y-3 font-mono text-[10px] text-gray-500"
+                                    animate={{ y: [0, -100] }}
+                                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                                >
+                                    {[...Array(15)].map((_, i) => (
+                                        <div key={i} className="flex justify-between border-b border-white/5 pb-1">
+                                            <span className="text-red-900">[{new Date().toLocaleTimeString()}:{Math.floor(Math.random() * 99)}]</span>
+                                            <span className="text-gray-400">EXEC_PROTOCOL_ID_{Math.floor(Math.random() * 9999)}</span>
+                                            <span className="text-white">TARGET_REGION: {['NA', 'EU', 'AS', 'SA'][Math.floor(Math.random() * 4)]}</span>
+                                            <span className={['text-emerald-500', 'text-yellow-500', 'text-red-500'][Math.floor(Math.random() * 3)]}>
+                                                {['SUCCESS', 'PENDING', 'WARNING'][Math.floor(Math.random() * 3)]}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </motion.div>
+                            </div>
+
+                            {/* Stats Column */}
+                            <div className="space-y-4">
+                                <div className="bg-red-900/10 border border-red-500/20 p-6">
+                                    <span className="block text-[9px] uppercase tracking-widest text-red-400 mb-2">Total_Deployments</span>
+                                    <span className="text-4xl font-black text-white">14,209</span>
                                 </div>
+                                <div className="bg-white/5 border border-white/10 p-6">
+                                    <span className="block text-[9px] uppercase tracking-widest text-gray-500 mb-2">Active_Nodes</span>
+                                    <span className="text-4xl font-black text-white">892</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                                <div className="p-8 pt-2">
-                                    <div className="flex items-start gap-4 mb-6">
-                                        <div className="p-4 bg-red-900/20 border border-red-600/30">
-                                            <AlertTriangle className="w-8 h-8 text-red-500" />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-1">
-                                                Confirm Deployment
-                                            </h3>
-                                            <p className="text-red-400 text-xs font-bold uppercase tracking-widest">
-                                                Auth_Key: {selectedService._id.slice(-8).toUpperCase()}
-                                            </p>
-                                        </div>
-                                    </div>
+                {/* --- Mission Dossier Modal (Advanced) --- */}
+                {showRequestModal && selectedService && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            onClick={() => setShowRequestModal(false)}
+                            className="absolute inset-0 bg-black/90 backdrop-blur-md"
+                        />
 
-                                    <div className="space-y-4 mb-8">
-                                        <div className="bg-[#111] p-4 border border-white/10">
-                                            <div className="text-[10px] text-gray-500 uppercase tracking-widest mb-1">Target_Protocol</div>
-                                            <div className="text-white font-bold">{selectedService.name}</div>
-                                        </div>
-                                        <div className="bg-[#111] p-4 border border-white/10">
-                                            <div className="text-[10px] text-gray-500 uppercase tracking-widest mb-1">Cost_Impact</div>
-                                            <div className="text-white font-bold">
-                                                {selectedService.pricing?.amount ? `$${selectedService.pricing.amount}` : "Dynamic_Quotation"}
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="relative bg-[#050505] border border-white/10 w-full max-w-4xl h-[80vh] flex flex-col shadow-[0_0_100px_rgba(220,38,38,0.1)] overflow-hidden"
+                        >
+                            {/* Modal Header */}
+                            <div className="h-12 bg-white/5 border-b border-white/10 flex justify-between items-center px-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-2 h-2 bg-red-500 animate-pulse" />
+                                    <span className="text-xs font-black uppercase tracking-[0.3em] text-white">
+                                        Mission_Dossier // {selectedService.name}
+                                    </span>
+                                </div>
+                                <div className="flex text-[10px] font-mono gap-4 text-gray-500">
+                                    <span>SEC_LEVEL: ALPHA</span>
+                                    <span>AUTH_KEY: {selectedService._id.slice(0, 8).toUpperCase()}</span>
+                                </div>
+                            </div>
+
+                            <div className="flex-1 flex overflow-hidden">
+                                {/* Sidebar: Technical Specs */}
+                                <div className="w-1/3 bg-black/50 border-r border-white/5 p-6 space-y-8 overflow-y-auto">
+                                    <div>
+                                        <h4 className="text-[10px] text-red-500 font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
+                                            <Crosshair size={12} /> Operational_Parameters
+                                        </h4>
+                                        <div className="space-y-4 font-mono text-xs">
+                                            <div className="bg-white/5 p-3 border-l-2 border-red-500">
+                                                <span className="block text-gray-500 text-[9px] uppercase mb-1">Target Protocol</span>
+                                                <span className="text-white font-bold">{selectedService.name}</span>
+                                            </div>
+                                            <div className="bg-white/5 p-3 border-l-2 border-white/20">
+                                                <span className="block text-gray-500 text-[9px] uppercase mb-1">Est. Duration</span>
+                                                <span className="text-white">{selectedService.duration ? `${selectedService.duration.value} ${selectedService.duration.unit}` : "Variable Cycle"}</span>
+                                            </div>
+                                            <div className="bg-white/5 p-3 border-l-2 border-white/20">
+                                                <span className="block text-gray-500 text-[9px] uppercase mb-1">Resource Cost</span>
+                                                <span className="text-white">{selectedService.pricing?.type === "fixed" ? `$${selectedService.pricing.amount}` : "Dynamic Allocation"}</span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="flex gap-4">
+                                    <div>
+                                        <h4 className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
+                                            <Cpu size={12} /> System_Metrics
+                                        </h4>
+                                        <div className="space-y-3">
+                                            {[
+                                                { label: "Success_Probability", val: 98, color: "bg-emerald-500" },
+                                                { label: "Encryption_Strength", val: 100, color: "bg-red-500" },
+                                                { label: "Network_Impact", val: 45, color: "bg-yellow-500" }
+                                            ].map((stat, i) => (
+                                                <div key={i}>
+                                                    <div className="flex justify-between text-[9px] uppercase mb-1 text-gray-400">
+                                                        <span>{stat.label}</span>
+                                                        <span>{stat.val}%</span>
+                                                    </div>
+                                                    <div className="h-1 bg-white/10 w-full overflow-hidden">
+                                                        <motion.div
+                                                            className={`h-full ${stat.color}`}
+                                                            initial={{ width: 0 }}
+                                                            animate={{ width: `${stat.val}%` }}
+                                                            transition={{ duration: 1, delay: 0.5 + (i * 0.2) }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="p-4 border border-red-600/20 bg-red-900/5 text-[10px] text-red-400 font-mono leading-relaxed">
+                                        <AlertTriangle size={12} className="inline mr-2 mb-1" />
+                                        WARNING: Deployment of this protocol grants autonomous access to specified subsystems. Audit logs will be generated.
+                                    </div>
+                                </div>
+
+                                {/* Main Content: Briefing */}
+                                <div className="flex-1 p-8 flex flex-col bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/5 via-transparent to-transparent">
+                                    <div className="flex-1">
+                                        <h3 className="text-3xl font-black uppercase text-white mb-6">Mission Briefing</h3>
+                                        <p className="text-sm font-mono text-gray-400 leading-7 max-w-2xl mb-8">
+                                            {selectedService.description}
+                                        </p>
+
+                                        {/* Fake Terminal Output */}
+                                        <div className="bg-black border border-white/10 p-4 font-mono text-[10px] text-gray-500 h-48 overflow-hidden relative">
+                                            <div className="absolute top-0 left-0 w-full h-1 bg-white/10" />
+                                            <div className="space-y-1">
+                                                <p className="text-green-500">{">"} ESTABLISHING_SECURE_UPLINK...</p>
+                                                <p>{">"} HANDSHAKE_COMPLETE_ [23ms]</p>
+                                                <p>{">"} RETRIEVING_TARGET_METADATA...</p>
+                                                <p>{">"} ANALYZING_VULNERABILITY_VECTORS...</p>
+                                                <p>{">"} COMPILING_EXECUTION_PAYLOAD...</p>
+                                                <p>{">"} READY_FOR_DEPLOYMENT</p>
+                                                <motion.div
+                                                    className="w-2 h-4 bg-red-500"
+                                                    animate={{ opacity: [0, 1, 0] }}
+                                                    transition={{ duration: 0.8, repeat: Infinity }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Action Footer */}
+                                    <div className="mt-8 flex gap-4 pt-6 border-t border-white/10">
                                         <button
                                             onClick={() => setShowRequestModal(false)}
-                                            className="flex-1 py-4 border border-gray-700 text-gray-300 hover:bg-white/5 uppercase font-bold text-xs tracking-widest transition-colors"
+                                            className="px-8 py-4 border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 text-xs font-bold uppercase tracking-widest transition-all"
                                         >
-                                            Abort
+                                            Abort_Mission
                                         </button>
                                         <button
                                             onClick={confirmRequest}
-                                            className="flex-1 py-4 bg-red-600 hover:bg-red-500 text-white uppercase font-black text-xs tracking-[0.2em] shadow-[0_0_20px_rgba(220,38,38,0.3)] transition-all"
+                                            className="flex-1 bg-red-600 hover:bg-red-500 text-black text-xs font-black uppercase tracking-[0.2em] transition-all shadow-[0_0_30px_rgba(220,38,38,0.4)] hover:shadow-[0_0_50px_rgba(220,38,38,0.6)] flex items-center justify-center gap-3 relative overflow-hidden group"
                                         >
-                                            Initiate
+                                            <span className="relative z-10 flex items-center gap-2">
+                                                <Terminal size={14} /> Initialize_Protocol
+                                            </span>
+                                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 transform skew-y-12" />
                                         </button>
                                     </div>
                                 </div>
-                            </motion.div>
-                        </div>
-                    )}
-                </AnimatePresence>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
             </div>
-        </AnimatedPage>
+        </AnimatedPage >
     );
 };
 

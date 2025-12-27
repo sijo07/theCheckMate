@@ -1,14 +1,18 @@
-import React, { useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
+import axios from "axios";
+import { BASE_URL } from "../redux/constants";
 import { Link } from "react-router-dom";
-import TrustedCompanies from "@/components/home/trustedCompanies";
-import Feature from "@/components/home/feature";
-import LiveMap from "@/components/home/liveMap";
-import Malware from "@/components/home/malware";
 import { motion, useInView } from "framer-motion";
-import { Shield, ChevronRight, Activity, Lock, Zap, Globe } from "lucide-react";
+import { Shield, ChevronRight, Activity, Zap, Globe } from "lucide-react";
 
 // Using the generated high-tech hero background
-import heroImage from "../assets/hero_red.png";
+import HeroVisuals from "@/components/home/HeroVisuals";
+
+// Lazy load heavy components for better initial load performance
+const TrustedCompanies = React.lazy(() => import("@/components/home/trustedCompanies"));
+const Feature = React.lazy(() => import("@/components/home/feature"));
+const LiveMap = React.lazy(() => import("@/components/home/liveMap"));
+const Malware = React.lazy(() => import("@/components/home/malware"));
 
 const Home = () => {
   const trustedCompaniesRef = useRef(null);
@@ -16,15 +20,44 @@ const Home = () => {
   const liveMapRef = useRef(null);
   const malwareRef = useRef(null);
 
+  const [stats, setStats] = useState({
+    uptime: "99.99%",
+    activeNodes: "14,802",
+    threats: "Loading...",
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const { data } = await axios.get(`${BASE_URL}/api/incidents/attacks-on-this-day`);
+        setStats((prev) => ({
+          ...prev,
+          threats: data.attacksOnThisDay ? data.attacksOnThisDay.toLocaleString() : "0",
+        }));
+      } catch (error) {
+        console.error("Failed to fetch stats:", error);
+        setStats((prev) => ({ ...prev, threats: "2.4M" })); // Fallback
+      }
+    };
+
+    fetchStats();
+  }, []);
+
   const isTrustedCompaniesInView = useInView(trustedCompaniesRef, { once: true, margin: "-100px" });
-  const isFeatureInView = useInView(featureRef, { once: true, margin: "-100px" });
-  const isLiveMapInView = useInView(liveMapRef, { once: true, margin: "-100px" });
-  const isMalwareInView = useInView(malwareRef, { once: true, margin: "-100px" });
+  // const isFeatureInView = useInView(featureRef, { once: true, margin: "-100px" }); // Unused
+  // const isLiveMapInView = useInView(liveMapRef, { once: true, margin: "-100px" }); // Unused
+  // const isMalwareInView = useInView(malwareRef, { once: true, margin: "-100px" }); // Unused
+
+  const statItems = [
+    { label: "Uptime", val: stats.uptime, icon: Zap },
+    { label: "Active Nodes", val: stats.activeNodes, icon: Globe },
+    { label: "Threats Deflected", val: stats.threats, icon: Shield }
+  ];
 
   return (
     <div className="bg-[#09090b] text-white overflow-hidden">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center lg:pt-0 pt-4 px-4 overflow-hidden">
+      <section className="relative min-h-screen flex flex-col items-center justify-center pt-8 px-4 overflow-hidden">
 
 
         {/* Main Hero Content */}
@@ -72,11 +105,7 @@ const Home = () => {
 
             {/* Unique Element: Live Stats Ticker */}
             <div className="mt-12 flex flex-wrap gap-8 justify-center lg:justify-start">
-              {[
-                { label: "Uptime", val: "99.99%", icon: Zap },
-                { label: "Active Nodes", val: "14,802", icon: Globe },
-                { label: "Threats Deflected", val: "2.4M", icon: Shield }
-              ].map((stat, i) => (
+              {statItems.map((stat, i) => (
                 <div key={i} className="flex items-center gap-3">
                   <div className="p-2 bg-white/05 rounded-lg border border-white/05">
                     <stat.icon className="w-4 h-4 text-gray-500" />
@@ -90,171 +119,59 @@ const Home = () => {
             </div>
           </motion.div>
 
-          {/* Hero Image / Unique Visual */}
-          <motion.div
-            className="relative flex items-center justify-center"
-            initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
-            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-          >
-            {/* Main Circular Image Container */}
-            <div className="relative z-20 w-full max-w-[500px] aspect-square rounded-full overflow-hidden border-2 border-red-500/20 shadow-[0_0_80px_rgba(239,68,68,0.2)] bg-black">
-              <img
-                src={heroImage}
-                alt="Cyber Defense Command Center"
-                className="w-full h-full object-cover opacity-90 scale-110"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-red-900/40 via-transparent to-transparent opacity-60" />
-            </div>
-
-            {/* CYBER RINGS INFRASTRUCTURE - Positioned outside the circle for visibility */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] pointer-events-none z-10 flex items-center justify-center">
-
-              {/* Outer Pulsing Glow */}
-              <motion.div
-                className="absolute inset-0 border border-red-500/10 rounded-full"
-                animate={{ scale: [1, 1.05, 1], opacity: [0.05, 0.15, 0.05] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              />
-
-              {/* Vibrant Conic Sweep - Multiple segments */}
-              <motion.div
-                className="absolute inset-[-5%] rounded-full opacity-60"
-                style={{
-                  background: 'conic-gradient(from 0deg, transparent 0deg, #ef4444 10deg, transparent 40deg, transparent 180deg, #ef4444 190deg, transparent 220deg)',
-                  maskImage: 'radial-gradient(transparent 68%, black 70%)',
-                  WebkitMaskImage: 'radial-gradient(transparent 68%, black 70%)'
-                }}
-                animate={{ rotate: 360 }}
-                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-              />
-
-              {/* High-Speed Glitch Tech Ring */}
-              <motion.div
-                className="absolute inset-[2%] border border-red-500/40 rounded-full"
-                animate={{
-                  rotate: -360,
-                  opacity: [0.1, 0.4, 0.2, 0.6, 0.1],
-                  scale: [1, 1.01, 0.99, 1]
-                }}
-                transition={{
-                  rotate: { duration: 20, repeat: Infinity, ease: "linear" },
-                  opacity: { duration: 0.1, repeat: Infinity, repeatType: "mirror" }
-                }}
-              />
-
-              {/* Tactical Nav Markers */}
-              {[0, 90, 180, 270].map((angle) => (
-                <div
-                  key={angle}
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full"
-                  style={{ transform: `translate(-50%, -50%) rotate(${angle}deg)` }}
-                >
-                  <motion.div
-                    className="absolute top-[-10px] left-1/2 -translate-x-1/2 w-0.5 h-4 bg-red-500 shadow-[0_0_10px_#ef4444]"
-                    animate={{ opacity: [0.2, 1, 0.2] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: angle / 90 * 0.5 }}
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* Floating UI HUD elements - Centered Diagnostic Panel */}
-            <motion.div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-4 card-glass rounded-xl border border-white/10 backdrop-blur-md hidden md:block z-30"
-              animate={{
-                scale: [1, 1.02, 1],
-                opacity: [0.9, 1, 0.9]
-              }}
-              transition={{ duration: 4, repeat: Infinity }}
-            >
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/50">Core Status: Stable</span>
-              </div>
-              <div className="space-y-1">
-                <div className="w-32 h-1 bg-white/10 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-red-500"
-                    initial={{ width: "0%" }}
-                    animate={{ width: "75%" }}
-                    transition={{ duration: 2, delay: 1 }}
-                  />
-                </div>
-                <div className="w-24 h-1 bg-white/10 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-red-400"
-                    initial={{ width: "0%" }}
-                    animate={{ width: "45%" }}
-                    transition={{ duration: 2, delay: 1.2 }}
-                  />
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
+          {/* Hero Image / Unique Visual - Extracted to component */}
+          <HeroVisuals />
         </div>
       </section>
 
       {/* Sections Wrapper */}
       <div className="relative z-10 bg-[#09090b]">
-        <motion.div
-          ref={trustedCompaniesRef}
-          className="py-12 border-y border-white/05 bg-black/20"
-          initial={{ opacity: 0 }}
-          animate={isTrustedCompaniesInView ? { opacity: 1 } : {}}
-        >
-          <div className="max-w-7xl mx-auto px-4">
-            <TrustedCompanies />
+        <Suspense fallback={
+          <div className="py-32 flex flex-col items-center justify-center gap-4 text-red-500/50">
+            <Activity className="w-8 h-8 animate-pulse" />
+            <span className="text-xs uppercase tracking-[0.3em]">Loading Modules...</span>
           </div>
-        </motion.div>
-
-        <section ref={featureRef} className="py-20 px-4 relative overflow-hidden">
-          <div className="max-w-7xl mx-auto">
-            <Feature />
-          </div>
-        </section>
-
-        <section ref={liveMapRef} className="py-20 px-4 bg-black/40 border-y border-white/05 relative overflow-hidden">
-          <div className="max-w-7xl mx-auto">
-            <div className="mb-10 text-center max-w-3xl mx-auto">
-              <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-4">
-                Live Global <span className="text-red-500">Sentinel</span>
-              </h2>
-              <p className="text-gray-500 font-medium uppercase tracking-widest text-xs">
-                Real-time attack trace and neutralization dashboard.
-              </p>
+        }>
+          <motion.div
+            ref={trustedCompaniesRef}
+            className="py-8 border-y border-white/05 bg-black/20"
+            initial={{ opacity: 0 }}
+            animate={isTrustedCompaniesInView ? { opacity: 1 } : {}}
+          >
+            <div className="max-w-7xl mx-auto px-4">
+              <TrustedCompanies />
             </div>
-            <LiveMap />
-          </div>
-        </section>
+          </motion.div>
 
-        <section ref={malwareRef} className="py-20 px-4 mb-20">
-          <div className="max-w-7xl mx-auto">
-            <Malware />
-          </div>
-        </section>
+          <section ref={featureRef} className="py-10 px-4 relative overflow-hidden">
+            <div className="max-w-7xl mx-auto">
+              <Feature />
+            </div>
+          </section>
+
+          <section ref={liveMapRef} className="py-10 px-4 bg-black/40 border-y border-white/05 relative overflow-hidden">
+            <div className="max-w-7xl mx-auto">
+              <div className="mb-6 text-center max-w-3xl mx-auto">
+                <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-2">
+                  Live Global <span className="text-red-500">Sentinel</span>
+                </h2>
+                <p className="text-gray-500 font-medium uppercase tracking-widest text-xs">
+                  Real-time attack trace and neutralization dashboard.
+                </p>
+              </div>
+              <LiveMap />
+            </div>
+          </section>
+
+          <section ref={malwareRef} className="py-10 px-4 mb-8">
+            <div className="max-w-7xl mx-auto">
+              <Malware />
+            </div>
+          </section>
+        </Suspense>
       </div>
 
-      {/* Footer */}
-      <footer className="py-20 bg-black border-t border-white/05 text-center px-4 relative">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-px bg-gradient-to-r from-transparent via-red-500/50 to-transparent" />
-        <div className="max-w-7xl mx-auto flex flex-col items-center">
-          <div className="flex items-center space-x-2 mb-8">
-            <Shield className="w-6 h-6 text-red-500" />
-            <span className="text-2xl font-black tracking-tighter uppercase text-white">
-              Check<span className="text-red-500">Mate</span>
-            </span>
-          </div>
-          <div className="flex gap-8 mb-10 text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">
-            <a href="#" className="hover:text-red-500 transition-colors">Protocol</a>
-            <a href="#" className="hover:text-red-500 transition-colors">Nodes</a>
-            <a href="#" className="hover:text-red-500 transition-colors">Encryption</a>
-          </div>
-          <p className="text-gray-700 text-[9px] font-bold uppercase tracking-[0.3em]">
-            &copy; 2025 CHECKMATE SECURITY GROUP // ALL RIGHTS RESERVED.
-          </p>
-        </div>
-      </footer>
+
     </div>
   );
 };

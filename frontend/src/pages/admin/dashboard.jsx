@@ -1,6 +1,7 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bar, Doughnut } from "react-chartjs-2";
+import { Bar, Doughnut, Line } from "react-chartjs-2";
 import {
   Globe,
   Shield,
@@ -13,6 +14,10 @@ import {
   Terminal,
   AlertCircle,
   Download,
+  Crosshair,
+  Database,
+  Eye,
+  Hash
 } from "lucide-react";
 import {
   Chart as ChartJS,
@@ -20,9 +25,12 @@ import {
   LinearScale,
   BarElement,
   ArcElement,
+  PointElement,
+  LineElement,
   Title,
   Tooltip,
   Legend,
+  Filler
 } from "chart.js";
 import {
   useGetAllIncidentsQuery,
@@ -31,374 +39,346 @@ import {
 } from "../../redux/api/incidentApiSlice";
 import Loader from "../../components/loader";
 
+// Register ChartJS
 ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
   ArcElement,
+  PointElement,
+  LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 );
 
-const Dashboard = () => {
-  const {
-    data: incidents = [],
-    isLoading: loadingIncidents,
-  } = useGetAllIncidentsQuery();
+// --- Styled Components / Sub-Components ---
 
-  const {
-    data: topCountries = [],
-  } = useGetTopTargetedCountriesQuery();
+const CyberCard = ({ children, className = "", title, icon: Icon, delay = 0 }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay, duration: 0.5 }}
+    className={`relative bg-[#0a0a0b]/80 backdrop-blur-sm border border-red-900/30 p-6 group overflow-hidden ${className}`}
+  >
+    {/* Corner Decorations */}
+    <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-red-500" />
+    <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-red-500" />
+    <div className="absolute bottom-0 left-0 w-2 h-2 border-b-2 border-l-2 border-red-500" />
+    <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-red-500" />
 
-  const {
-    data: topIndustries = [],
-  } = useGetTopTargetedIndustriesQuery();
+    {/* Animated Border Glow */}
+    <div className="absolute inset-0 border border-red-500/0 group-hover:border-red-500/30 transition-colors duration-500" />
 
-  const highSeverityCount = incidents.filter((inc) => inc.severity === "High").length || 0;
-  const percentHighSeverity = incidents.length ? Math.round((highSeverityCount / incidents.length) * 100) : 0;
+    {/* Header */}
+    {(title || Icon) && (
+      <div className="flex items-center gap-3 mb-6 border-b border-red-900/20 pb-2">
+        {Icon && <Icon className="w-5 h-5 text-red-500 animate-pulse" />}
+        {title && (
+          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 group-hover:text-red-500 transition-colors">
+            {title}
+          </h3>
+        )}
+      </div>
+    )}
 
-  const stats = [
-    { label: "NET_CAPACITY", value: "1.24 PB/s", color: "text-blue-800", icon: Wifi },
-    { label: "ENC_STRENGTH", value: "AES_256", color: "text-purple-800", icon: Lock },
-    { label: "NODE_STABILITY", value: "99.98%", color: "text-emerald-800", icon: Server },
-    { label: "THREAT_DETECTION", value: "REAL_TIME", color: "text-red-800", icon: Shield },
-  ];
+    {children}
+  </motion.div>
+);
 
-  const barOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: "#000",
-        titleFont: { family: "monospace", size: 10 },
-        bodyFont: { family: "monospace", size: 10 },
-        borderColor: "rgba(239, 68, 68, 0.4)",
-        borderWidth: 1,
-      },
-    },
-    scales: {
-      x: { grid: { display: false }, ticks: { color: "#666", font: { size: 8, family: "monospace" } } },
-      y: { grid: { color: "rgba(239, 68, 68, 0.05)" }, ticks: { color: "#666", font: { size: 8, family: "monospace" } } },
-    },
-  };
+const StatPill = ({ label, value, icon: Icon, trend }) => (
+  <div className="flex items-center justify-between p-3 bg-white/05 border-l-2 border-red-500/50 hover:border-red-500 transition-all hover:bg-white/10 group">
+    <div className="flex items-center gap-3">
+      <div className="p-2 bg-black/50 rounded text-red-500 group-hover:text-white transition-colors">
+        <Icon size={14} />
+      </div>
+      <div>
+        <div className="text-[9px] text-gray-500 uppercase font-bold tracking-wider">{label}</div>
+        <div className="text-sm font-black text-white font-mono">{value}</div>
+      </div>
+    </div>
+    {trend && (
+      <div className={`text-[9px] font-bold ${trend > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+        {trend > 0 ? '+' : ''}{trend}%
+      </div>
+    )}
+  </div>
+);
 
-  const barDataCountries = {
-    labels: topCountries.map((c) => c._id?.substring(0, 3).toUpperCase() || "UNK"),
-    datasets: [{
-      data: topCountries.map((c) => c.count),
-      backgroundColor: "rgba(153, 27, 27, 0.6)",
-      borderColor: "rgba(185, 28, 28, 0.4)",
-      borderWidth: 1,
-      barThickness: 10,
-    }],
-  };
+const TerminalLog = () => {
+  const [logs, setLogs] = useState([
+    "SYS_INIT: Core services loaded...",
+    "NET_SEC: Firewall integrity verified [100%]",
+    "AUTH: Admin session established",
+  ]);
 
-  const malwareData = {
-    labels: ["DDoS", "Malware", "Phishing", "Ransomware"],
-    datasets: [{
-      data: [35, 25, 20, 20],
-      backgroundColor: [
-        "rgba(185, 28, 28, 0.6)", // Deep Red
-        "rgba(30, 58, 138, 0.6)", // Deep Blue
-        "rgba(6, 78, 59, 0.6)",   // Deep Emerald
-        "rgba(88, 28, 135, 0.6)", // Deep Purple
-      ],
-      hoverBackgroundColor: "rgba(255, 255, 255, 0.1)",
-      borderWidth: 0,
-      spacing: 2,
-    }],
-  };
+  useEffect(() => {
+    const messages = [
+      "SCAN: Port 8080 traffic analysis...",
+      "WARN: High latency on Node-7",
+      "INFO: Database backup completed",
+      "SEC: Blocked unauthorized IP 192.168.x.x",
+      "API: Incident report ingestion...",
+      "CRIT: Packet fragmentation detected",
+      "SYS: Memory optimization routine...",
+    ];
+
+    const interval = setInterval(() => {
+      setLogs(prev => [`[${new Date().toLocaleTimeString()}] ${messages[Math.floor(Math.random() * messages.length)]}`, ...prev].slice(0, 8));
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-[#050506] text-gray-400 p-4 md:p-6 font-mono selection:bg-red-500/30 overflow-hidden relative">
-      {/* Background Cyber Layer */}
-      <div className="fixed inset-0 pointer-events-none opacity-20">
-        <div className="w-full h-full" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)', backgroundSize: '80px 80px' }} />
-        <div className="absolute inset-0 bg-radial-gradient from-transparent via-black/40 to-[#050506]" />
+    <div className="bg-black/80 font-mono text-[10px] p-4 h-full overflow-hidden border border-red-900/30 relative">
+      <div className="absolute top-0 right-0 px-2 py-1 bg-red-900/20 text-red-500 text-[8px] font-bold uppercase tracking-widest border-bl border-l border-b border-red-900/30">
+        System_Log // Live
       </div>
-
-      {/* Scanning Line */}
-      <motion.div
-        className="fixed left-0 right-0 h-[100px] bg-red-900/05 z-0 pointer-events-none border-y border-red-900/10"
-        animate={{ top: ["-10%", "110%"] }}
-        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-      />
-
-      <div className="max-w-[1600px] mx-auto relative z-10">
-        {/* Header HUD */}
-        <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 pb-6 border-b border-white/05 gap-6">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-2 h-2 bg-red-800 rounded-sm rotate-45 animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-red-900">System_Admin // Node: CHK-MT-09</span>
-            </div>
-            <h1 className="text-4xl font-black text-white uppercase tracking-tighter leading-none italic">
-              Command_<span className="text-red-900">Center</span>
-            </h1>
-          </div>
-
-          <div className="flex flex-wrap gap-4">
-            {stats.map((s, i) => (
-              <div key={i} className="px-5 py-2 bg-white/02 border border-white/05 rounded-lg">
-                <p className="text-[8px] font-bold uppercase tracking-widest text-gray-500 mb-1 flex items-center gap-2">
-                  <s.icon size={8} className={s.color} /> {s.label}
-                </p>
-                <p className="text-xs font-black text-white tracking-widest">{s.value}</p>
-              </div>
-            ))}
-          </div>
-        </header>
-
-        {/* Main Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-auto lg:h-[750px]">
-
-          {/* LEFT: Operational Status (Col 3) */}
-          <div className="lg:col-span-3 flex flex-col gap-6">
-            <section className="flex-1 bg-white/02 border border-white/05 rounded-2xl p-6 relative overflow-hidden flex flex-col decoration-none">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-6 flex items-center gap-2">
-                <Cpu size={12} className="text-blue-500" /> Operational_Node_Matrix
-              </h3>
-              <div className="grid grid-cols-6 gap-2 mb-8">
-                {Array.from({ length: 48 }).map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className={`h-2 rounded-sm ${i % 7 === 0 ? 'bg-red-900/40 shadow-[0_0_8px_#991b1b40]' : 'bg-emerald-500/20'}`}
-                    animate={{ opacity: [1, 0.4, 1] }}
-                    transition={{ duration: Math.random() * 3 + 2, repeat: Infinity }}
-                  />
-                ))}
-              </div>
-              <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-2">
-                {[
-                  { label: "Global Traffic", val: "482 GB/s", status: "Nominal" },
-                  { label: "Active Probes", val: "1,204", status: "Intercepted" },
-                  { label: "Enc Handshakes", val: "42k/m", status: "Secure" },
-                  { label: "Kernel Load", val: "24.2%", status: "Optimum" },
-                ].map((item, i) => (
-                  <div key={i} className="p-3 bg-black/40 border border-white/05 rounded-xl">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-[9px] font-bold text-gray-600 uppercase">{item.label}</span>
-                      <span className="text-[8px] text-emerald-500 italic uppercase tracking-widest">{item.status}</span>
-                    </div>
-                    <div className="text-sm font-black text-white">{item.val}</div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section className="h-48 bg-red-900/05 border border-red-900/10 rounded-2xl p-6 relative overflow-hidden">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-red-800 mb-4">Lethality_Scale</h3>
-              <div className="flex items-center gap-6 h-full pb-8">
-                <div className="text-4xl font-black text-white italic">0.28</div>
-                <div className="flex-1 h-3 bg-white/05 rounded-full overflow-hidden relative">
-                  <motion.div
-                    className="h-full bg-red-800 shadow-[0_0_15px_#991b1b]"
-                    initial={{ width: 0 }}
-                    animate={{ width: "28%" }}
-                    transition={{ duration: 2 }}
-                  />
-                </div>
-              </div>
-            </section>
-          </div>
-
-          {/* CENTER: Data Core (Col 6) */}
-          <div className="lg:col-span-6 flex flex-col gap-6">
-            <section className="flex-1 bg-white/02 border border-white/05 rounded-2xl p-8 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none group-hover:opacity-[0.05] transition-opacity">
-                <Globe size={200} />
-              </div>
-              <div className="flex justify-between items-start mb-8 text-none">
-                <div>
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white flex items-center gap-2 mb-1">
-                    <Activity size={12} className="text-red-800" /> Inter-Node_Threat_Pulse
-                  </h3>
-                  <span className="text-[9px] text-gray-600 font-bold uppercase tracking-widest italic">Temporal Attack Volumetrics</span>
-                </div>
-                <div className="flex gap-4">
-                  <div className="text-right">
-                    <p className="text-[8px] text-gray-500 font-bold uppercase mb-1">Total_Signals</p>
-                    <p className="text-lg font-black text-white">{incidents.length}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[8px] text-gray-500 font-bold uppercase mb-1">Crit_Impact</p>
-                    <p className="text-lg font-black text-red-800">{highSeverityCount}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="h-[300px] mb-8">
-                <Bar data={barDataCountries} options={barOptions} />
-              </div>
-              <div className="grid grid-cols-3 gap-6">
-                <div className="p-4 bg-white/02 border border-white/05 rounded-2xl">
-                  <p className="text-[9px] text-gray-600 font-bold uppercase mb-2 italic">Threat_DNA</p>
-                  <div className="text-xs font-black text-white flex items-center justify-between">
-                    <span>VOLATILITY</span>
-                    <span className="text-red-800">HIGH</span>
-                  </div>
-                </div>
-                <div className="p-4 bg-white/02 border border-white/05 rounded-2xl">
-                  <p className="text-[9px] text-gray-600 font-bold uppercase mb-2 italic">Sector_Risk</p>
-                  <div className="text-xs font-black text-white flex items-center justify-between">
-                    <span>DYNAMIC</span>
-                    <span className="text-blue-500">42.2%</span>
-                  </div>
-                </div>
-                <div className="p-4 bg-white/02 border border-white/05 rounded-2xl">
-                  <p className="text-[9px] text-gray-600 font-bold uppercase mb-2 italic">Def_Active</p>
-                  <div className="text-xs font-black text-white flex items-center justify-between">
-                    <span>READY</span>
-                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section className="lg:h-48 bg-white/02 border border-white/05 rounded-2xl p-6 relative overflow-hidden flex items-center gap-8">
-              <div className="w-32 h-32 flex-shrink-0 relative group/chart">
-                {/* Perimeter Radar Ticks */}
-                <div className="absolute inset-[-10px] pointer-events-none opacity-20 group-hover/chart:opacity-40 transition-opacity">
-                  {[...Array(12)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="absolute w-1 h-1 bg-white"
-                      style={{
-                        top: '50%',
-                        left: '50%',
-                        transform: `rotate(${i * 30}deg) translateY(-60px)`
-                      }}
-                    />
-                  ))}
-                </div>
-
-                <motion.div
-                  className="w-full h-full relative z-10"
-                  initial={{ rotate: -90, scale: 0.8, opacity: 0 }}
-                  animate={{ rotate: 0, scale: 1, opacity: 1 }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
-                >
-                  <Doughnut data={malwareData} options={doughnutOptions} />
-                </motion.div>
-
-                {/* Central HUD Core */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <motion.span
-                    className="text-xl font-black text-white italic leading-none"
-                    animate={{ opacity: [1, 0.5, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    28%
-                  </motion.span>
-                  <span className="text-[7px] font-bold text-red-800 uppercase tracking-widest mt-1">THREAT_LVL</span>
-                </div>
-
-                <div className="absolute inset-0 border-4 border-white/05 rounded-full scale-110" />
-              </div>
-              <div className="flex-1 grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {malwareData.labels.map((label, i) => (
-                  <div key={i} className="text-center">
-                    <p className="text-[8px] text-gray-600 font-bold uppercase mb-1">{label}</p>
-                    <p className="text-sm font-black text-white italic">{malwareData.datasets[0].data[i]}%</p>
-                    <div className="w-8 h-1 mx-auto mt-2" style={{ backgroundColor: malwareData.datasets[0].backgroundColor[i] }} />
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
-
-          {/* RIGHT: System Telemetry (Col 3) */}
-          <div className="lg:col-span-3 flex flex-col gap-6">
-            <section className="flex-1 bg-white/02 border border-white/05 rounded-2xl p-6 relative overflow-hidden">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-6 flex items-center gap-2">
-                <Terminal size={12} className="text-red-800" /> Active_Threat_DNA
-              </h3>
-              <div className="space-y-3 overflow-hidden">
-                {incidents.slice(0, 8).map((inc, i) => (
-                  <div key={i} className="flex flex-col border-b border-white/05 pb-2">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-[8px] font-black text-red-800/70 truncate w-2/3 uppercase">{inc.title}</span>
-                      <span className="text-[7px] text-gray-700 italic">{inc.severity}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] font-black text-white truncate max-w-[120px] uppercase">0x{Math.random().toString(16).slice(2, 8).toUpperCase()}</span>
-                      <div className="flex gap-1">
-                        <div className="w-2 h-0.5 bg-red-400" />
-                        <div className="w-2 h-0.5 bg-gray-800" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="absolute bottom-6 left-6 right-6 pt-4 border-t border-white/05 flex justify-between items-center">
-                <span className="text-[8px] font-bold text-gray-700 uppercase">Live_Ingestion_Active</span>
-                <Download size={10} className="text-gray-700 animate-bounce" />
-              </div>
-            </section>
-
-            <section className="h-48 bg-white/02 border border-white/05 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-center">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 border border-red-900/20 rounded flex items-center justify-center text-red-800">
-                  <Zap size={20} fill="currentColor" />
-                </div>
-                <div>
-                  <p className="text-[8px] text-gray-500 font-bold uppercase tracking-widest mb-0.5 italic">Energy_Output</p>
-                  <p className="text-xl font-black text-white italic">482.4 GW/h</p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-[8px] text-gray-700 font-bold uppercase tracking-widest">
-                  <span>Load: 42%</span>
-                  <span>Optimum</span>
-                </div>
-                <div className="h-1 bg-white/05 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-500 w-[42%]" />
-                </div>
-              </div>
-            </section>
-          </div>
-        </div>
-      </div>
-
-      {/* Sidebar Data Strip */}
-      <div className="fixed top-0 right-0 w-1 h-full bg-red-900/10 z-50 overflow-hidden">
-        <motion.div
-          className="w-full h-20 bg-red-900 shadow-[0_0_20px_#991b1b]"
-          animate={{ top: ["-20%", "120%"] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-        />
-      </div>
-
-      {/* Bottom HUD Metadata */}
-      <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-md border-t border-white/05 py-2 px-6 z-50 flex justify-between items-center text-[8px] font-black uppercase tracking-[0.3em] text-gray-600">
-        <div className="flex gap-8">
-          <span>Terminal: /dev/tty0</span>
-          <span className="text-emerald-500/50">ENC: AES_256_ACTIVE</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-red-900/50 animate-pulse">!! SECURITY_TAMPER_DETECTED !!</span>
-          <span>© 2025 CHECK_MATE OS v4.2.0</span>
-        </div>
+      <div className="space-y-1">
+        {logs.map((log, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1 - (i * 0.1), x: 0 }}
+            className="text-green-500/90 truncate"
+          >
+            <span className="text-red-500 mr-2">{">"}</span>{log}
+          </motion.div>
+        ))}
       </div>
     </div>
   );
 };
 
-const doughnutOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  cutout: "85%",
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      backgroundColor: "#000",
-      titleFont: { family: "monospace", size: 10 },
-      bodyFont: { family: "monospace", size: 10 },
-      borderColor: "rgba(239, 68, 68, 0.2)",
-      borderWidth: 1,
+const Dashboard = () => {
+  // Data Queries
+  const { data: incidents = [], isLoading: loadingIncidents } = useGetAllIncidentsQuery(undefined, { pollingInterval: 30000 });
+  const { data: topCountries = [] } = useGetTopTargetedCountriesQuery();
+  const { data: topIndustries = [] } = useGetTopTargetedIndustriesQuery();
+
+  // Mocks/Calculations
+  const highSeverityCount = incidents.filter((inc) => inc.severity?.toLowerCase() === "high" || inc.severity?.toLowerCase() === "critical").length || 0;
+  const criticalCount = incidents.filter((inc) => inc.severity?.toLowerCase() === "critical").length || 0;
+
+  // Real-time clock
+  const [time, setTime] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // --- Chart Configs ---
+  const chartCommonOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: "#050505",
+        titleColor: "#ef4444",
+        bodyColor: "#fff",
+        borderColor: "#333",
+        borderWidth: 1,
+        titleFont: { family: "monospace", size: 10 },
+        bodyFont: { family: "monospace", size: 10 },
+        padding: 10,
+        displayColors: false,
+      },
     },
-  },
+    scales: {
+      x: {
+        grid: { color: "rgba(255,255,255,0.02)" },
+        ticks: { color: "#666", font: { family: "monospace", size: 9 } }
+      },
+      y: {
+        grid: { color: "rgba(255,255,255,0.02)" },
+        ticks: { color: "#666", font: { family: "monospace", size: 9 } }
+      },
+    },
+  };
+
+  const incidentsChartData = {
+    labels: topCountries.map(c => c._id),
+    datasets: [{
+      data: topCountries.map(c => c.count),
+      backgroundColor: "rgba(239, 68, 68, 0.5)",
+      borderColor: "#ef4444",
+      borderWidth: 1,
+      hoverBackgroundColor: "#ef4444",
+    }]
+  };
+
+  const severityChartData = {
+    labels: ["Critical", "High", "Medium", "Low"],
+    datasets: [{
+      data: [
+        incidents.filter(i => i.severity === 'critical').length,
+        incidents.filter(i => i.severity === 'high').length,
+        incidents.filter(i => i.severity === 'medium').length,
+        incidents.filter(i => i.severity === 'low').length,
+      ],
+      backgroundColor: ["#ef4444", "#f97316", "#eab308", "#3b82f6"],
+      borderColor: "#000",
+      borderWidth: 2,
+    }]
+  };
+
+  return (
+    <div className="min-h-screen bg-[#020203] text-gray-300 font-mono relative overflow-hidden pb-12">
+      {/* Background Ambience */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(185,28,28,0.05),transparent_70%)]" />
+        <div className="w-full h-full opacity-10" style={{
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)',
+          backgroundSize: '40px 40px'
+        }} />
+      </div>
+
+      {/* Header Bar */}
+      <header className="fixed top-0 left-0 right-0 h-16 bg-[#0a0a0b]/90 backdrop-blur border-b border-red-900/30 z-40 px-6 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Shield className="w-6 h-6 text-red-600 animate-pulse" />
+          <h1 className="text-lg font-black uppercase tracking-[0.2em] text-white">
+            Admin <span className="text-red-600">Console_</span>
+          </h1>
+        </div>
+
+        <div className="flex items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-gray-500">
+          <div className="hidden md:flex items-center gap-2">
+            <Globe size={12} className="text-blue-500" />
+            <span>Net_Status: <span className="text-white">Online</span></span>
+          </div>
+          <div className="hidden md:flex items-center gap-2">
+            <Server size={12} className="text-emerald-500" />
+            <span>Server_Load: <span className="text-white">34%</span></span>
+          </div>
+          <div className="px-3 py-1 bg-red-900/20 border border-red-900/50 text-red-500 rounded flex items-center gap-2">
+            <span className="w-2 h-2 bg-red-500 rounded-full animate-ping" />
+            {time.toLocaleTimeString()}
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 pt-24 max-w-[1600px] relative z-10">
+
+        {/* Top Stats Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <CyberCard delay={0.1} className="!p-0 border-l-4 border-l-red-600">
+            <StatPill label="Total Incidents" value={incidents.length} icon={Database} trend={12} />
+          </CyberCard>
+          <CyberCard delay={0.2} className="!p-0 border-l-4 border-l-red-600">
+            <StatPill label="Critical Alerts" value={criticalCount} icon={AlertCircle} trend={-5} />
+          </CyberCard>
+          <CyberCard delay={0.3} className="!p-0 border-l-4 border-l-red-600">
+            <StatPill label="Active Nodes" value="1,402" icon={Wifi} trend={2} />
+          </CyberCard>
+          <CyberCard delay={0.4} className="!p-0 border-l-4 border-l-red-600">
+            <StatPill label="Sys Integrity" value="99.9%" icon={Shield} />
+          </CyberCard>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+          {/* Left Col: Main Chart (8 cols) */}
+          <div className="lg:col-span-8 space-y-6">
+
+            {/* Global Threat Map Visualization (using Bar for now) */}
+            <CyberCard title="Global_Threat_Vector_Analysis" icon={Crosshair} className="h-[400px]">
+              <div className="h-full pb-8">
+                <Bar data={incidentsChartData} options={chartCommonOptions} />
+              </div>
+            </CyberCard>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Severity Pulse */}
+              <CyberCard title="Severity_Distribution" icon={Activity} className="h-[300px]">
+                <div className="h-full pb-6 relative flex items-center justify-center">
+                  <Doughnut
+                    data={severityChartData}
+                    options={{
+                      ...chartCommonOptions,
+                      cutout: '70%',
+                      plugins: { legend: { display: false } }
+                    }}
+                  />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-2xl font-black text-white">{highSeverityCount}</span>
+                    <span className="text-[8px] uppercase tracking-widest text-red-500">High_Risk</span>
+                  </div>
+                </div>
+              </CyberCard>
+
+              {/* Live Terminal */}
+              <CyberCard title="System_Kernel_Log" icon={Terminal} className="h-[300px] !p-0 overflow-hidden flex flex-col">
+                <TerminalLog />
+              </CyberCard>
+            </div>
+          </div>
+
+          {/* Right Col: Lists & Actions (4 cols) */}
+          <div className="lg:col-span-4 space-y-6">
+
+            {/* Top Industries */}
+            <CyberCard title="Sector_Vulnerability_Index" icon={Hash}>
+              <div className="space-y-4">
+                {topIndustries.map((ind, i) => (
+                  <div key={i} className="group">
+                    <div className="flex justify-between items-end mb-1">
+                      <span className="text-[10px] font-bold uppercase text-gray-400 group-hover:text-white transition-colors">
+                        {ind._id}
+                      </span>
+                      <span className="text-xs font-mono text-red-500">{ind.count}</span>
+                    </div>
+                    <div className="w-full h-1 bg-white/05 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(ind.count / topIndustries[0].count) * 100}%` }}
+                        transition={{ duration: 1, delay: i * 0.1 }}
+                        className="h-full bg-red-600"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CyberCard>
+
+            {/* System Health */}
+            <CyberCard title="Node_Health_Status" icon={Cpu}>
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { l: 'CPU_01', v: '42%' },
+                  { l: 'CPU_02', v: '38%' },
+                  { l: 'MEM_USG', v: '12GB' },
+                  { l: 'NET_IO', v: '4Tb' },
+                ].map((stat, i) => (
+                  <div key={i} className="bg-red-900/10 border border-red-900/20 p-3 text-center">
+                    <div className="text-[8px] text-gray-500 uppercase tracking-widest mb-1">{stat.l}</div>
+                    <div className="text-lg font-black text-white">{stat.v}</div>
+                  </div>
+                ))}
+              </div>
+            </CyberCard>
+
+            {/* Quick Actions */}
+            <CyberCard title="Manual_Override" icon={Lock}>
+              <div className="space-y-2">
+                <button className="w-full py-3 bg-red-600/10 hover:bg-red-600/20 border border-red-600/30 text-red-500 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2">
+                  <Zap size={12} /> Force_System_Purge
+                </button>
+                <button className="w-full py-3 bg-white/05 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2">
+                  <Download size={12} /> Export_Audit_Log
+                </button>
+              </div>
+            </CyberCard>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Dashboard;

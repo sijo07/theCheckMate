@@ -1,86 +1,164 @@
-import { useRouteError, Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { AlertTriangle, Home, RefreshCcw, ShieldAlert } from "lucide-react";
+import { useRouteError, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { AlertTriangle, Home, RefreshCcw, ShieldAlert, Terminal, Cpu, Lock, AlertOctagon } from "lucide-react";
+
+const HexDump = () => {
+    const [hexLines, setHexLines] = useState([]);
+
+    useEffect(() => {
+        const generateLine = () => {
+            const addr = `0x${Math.floor(Math.random() * 65535).toString(16).padStart(4, '0').toUpperCase()}`;
+            const bytes = Array.from({ length: 8 }, () => Math.floor(Math.random() * 255).toString(16).padStart(2, '0').toUpperCase()).join(" ");
+            return `${addr}  ${bytes}`;
+        };
+
+        // Fill initial
+        setHexLines(Array.from({ length: 20 }, generateLine));
+
+        const interval = setInterval(() => {
+            setHexLines(prev => [...prev.slice(1), generateLine()]);
+        }, 100);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <div className="font-mono text-[10px] text-red-900/50 pointer-events-none select-none overflow-hidden h-full flex flex-col justify-end">
+            {hexLines.map((line, i) => (
+                <div key={i} className="whitespace-pre">{line}</div>
+            ))}
+        </div>
+    );
+};
 
 const ErrorBoundary = () => {
     const error = useRouteError();
-    console.error(error);
+    const navigate = useNavigate();
+    const [isRestoring, setIsRestoring] = useState(false);
+    const [restoreProgress, setRestoreProgress] = useState(0);
+
+    const handleReload = () => {
+        setIsRestoring(true);
+        let p = 0;
+        const interval = setInterval(() => {
+            p += Math.random() * 10;
+            if (p > 100) {
+                p = 100;
+                clearInterval(interval);
+                window.location.reload();
+            }
+            setRestoreProgress(p);
+        }, 100);
+    };
 
     return (
-        <div className="min-h-screen bg-[#09090b] text-white flex flex-col items-center justify-center p-4 relative overflow-hidden font-mono">
-            {/* Background Effects */}
-            <div className="absolute inset-0 cyber-grid opacity-20 pointer-events-none" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-red-500/10 blur-[120px] rounded-full pointer-events-none" />
+        <div className="min-h-screen bg-black text-red-600 font-mono relative overflow-hidden flex items-center justify-center p-4">
+            {/* CRT Lines */}
+            <div className="fixed inset-0 pointer-events-none z-50 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%] pointer-events-none" />
 
-            {/* Glitch Animated Border */}
-            <motion.div
-                className="relative z-10 w-full max-w-2xl card-glass border border-red-500/30 rounded-2xl p-8 md:p-12 shadow-[0_0_50px_rgba(239,68,68,0.1)]"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-            >
-                {/* Decorative HUD Elements */}
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent animate-pulse" />
-                <div className="absolute top-4 left-6 flex items-center gap-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full animate-ping" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-red-500/50">System Critical Error</span>
-                </div>
+            {/* Background Hex Dump */}
+            <div className="absolute inset-0 opacity-20">
+                <HexDump />
+            </div>
 
-                <div className="flex flex-col items-center text-center">
-                    <motion.div
-                        className="p-5 rounded-full bg-red-500/10 border border-red-500/20 mb-8"
-                        animate={{
-                            boxShadow: ["0 0 20px rgba(239,68,68,0.1)", "0 0 40px rgba(239,68,68,0.3)", "0 0 20px rgba(239,68,68,0.1)"]
-                        }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                    >
-                        <ShieldAlert className="w-16 h-16 text-red-500" />
-                    </motion.div>
+            {/* Main Content Container */}
+            <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-0 border border-red-900 bg-black/95 shadow-[0_0_100px_rgba(220,38,38,0.2)]">
 
-                    <h1 className="text-5xl md:text-7xl font-black mb-4 uppercase tracking-tighter leading-none">
-                        Fatal <span className="text-red-500">Exception</span>
-                    </h1>
+                {/* Left Panel: Graphic Error */}
+                <div className="p-12 flex flex-col justify-between border-r border-red-900/50 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-2 bg-red-600 animate-pulse" />
 
-                    <p className="text-gray-400 text-sm md:text-lg mb-8 max-w-md uppercase tracking-widest font-bold">
-                        The security kernel encountered an unrecoverable breach in the current execution flow.
-                    </p>
-
-                    <div className="w-full bg-black/40 rounded-lg p-5 border border-white/05 mb-10 text-left overflow-hidden relative group">
-                        <div className="flex items-center gap-2 mb-3">
-                            <AlertTriangle className="w-4 h-4 text-red-500/70" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Error Dump // Stack Trace Preview</span>
+                    <div>
+                        <div className="flex items-center gap-4 mb-8">
+                            <ShieldAlert className="w-12 h-12 text-red-600 animate-pulse" />
+                            <div>
+                                <h2 className="text-xs font-black uppercase tracking-[0.4em] text-red-900">System_Check_Failure</h2>
+                                <h2 className="text-xs font-black uppercase tracking-[0.4em] text-red-500">Critical_Stop</h2>
+                            </div>
                         </div>
-                        <code className="text-red-400/80 text-xs break-all leading-relaxed">
-                            {error.statusText || error.message || "Unknown systemic failure intercepted."}
-                        </code>
-                        {/* Scanning visual effect */}
-                        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-red-500/0 via-red-500/05 to-red-500/0 opacity-0 group-hover:opacity-100 -translate-y-[100%] group-hover:translate-y-[100%] transition-transform duration-[2000ms] pointer-events-none" />
+
+                        <motion.h1
+                            className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none mb-4 text-white mix-blend-difference"
+                            initial={{ x: -10, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ type: "spring", bounce: 0 }}
+                        >
+                            Kernel<br />
+                            <span className="text-red-600 text-outline-red">Panic</span>
+                        </motion.h1>
+
+                        <div className="inline-block px-4 py-2 bg-red-600 text-black font-black text-xs uppercase tracking-widest mb-8">
+                            Error_Code: 0x{Math.floor(Math.random() * 99999).toString(16).toUpperCase()}
+                        </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-4 w-full">
-                        <button
-                            onClick={() => window.location.reload()}
-                            className="flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-red-500 text-white rounded-lg font-black text-xs uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(239,68,68,0.2)] hover:bg-red-600 transition-all"
-                        >
-                            <RefreshCcw className="w-4 h-4 font-black" />
-                            Re-Initialize Node
-                        </button>
-                        <Link
-                            to="/"
-                            className="flex-1 flex items-center justify-center gap-3 px-8 py-4 bg-white/05 border border-white/10 hover:border-white/30 rounded-lg font-black text-xs uppercase tracking-[0.2em] transition-all"
-                        >
-                            <Home className="w-4 h-4" />
-                            Return to HQ
-                        </Link>
+                    <div className="space-y-4">
+                        <p className="text-sm font-bold uppercase tracking-widest text-gray-500">
+                            The execution thread was terminated to prevent system compromise.
+                        </p>
+                        <div className="text-[10px] text-red-900 font-mono border border-red-900/30 p-4 bg-red-950/10">
+                            {error?.statusText || error?.message || "Unknown Exception Intercepted"}
+                        </div>
                     </div>
                 </div>
-            </motion.div>
 
-            {/* Footer Binary Code */}
-            <div className="absolute bottom-10 left-0 w-full flex justify-center opacity-10 select-none pointer-events-none">
-                <p className="text-[10px] break-all max-w-4xl text-center leading-none">
-                    01000101 01110010 01110010 01101111 01110010 00100000 01000100 01100101 01110100 01100101 01100011 01110100 01100101 01100100 00001010 01010011 01111001 01110011 01110100 01100101 01101101 00100000 01001000 01100001 01101100 01110100 01100101 01100100
-                </p>
+                {/* Right Panel: Interactive Terminal */}
+                <div className="p-12 bg-[#050505] flex flex-col relative text-xs">
+                    <div className="absolute top-4 right-4 flex gap-2">
+                        <div className="w-3 h-3 rounded-full bg-red-500 animate-ping" />
+                        <div className="w-3 h-3 rounded-full bg-red-900" />
+                        <div className="w-3 h-3 rounded-full bg-red-900" />
+                    </div>
+
+                    <div className="flex-1 font-mono text-gray-500 mb-8 space-y-2 overflow-hidden">
+                        <p className="text-red-500">{">"} RUNNING DIAGNOSTICS...</p>
+                        <p>{">"} MEMORY_DUMP... [DONE]</p>
+                        <p>{">"} STACK_TRACE_ANALYSIS... [FAIL]</p>
+                        <p>{">"} ATTEMPTING_SYSCALL_HOOK... [FAIL]</p>
+                        <p className="text-red-500 animate-pulse">{">"} FATAL: UNRECOVERABLE_STATE</p>
+                        <p className="mt-4 text-gray-600">
+                            A problem has been detected and windows has been shut down to prevent damage to your computer.
+                            If this is the first time you've seen this stop error screen, restart your computer.
+                        </p>
+                    </div>
+
+                    {isRestoring ? (
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-[10px] font-bold uppercase text-red-500 animate-pulse">
+                                <span>System_Restore_Protocol</span>
+                                <span>{Math.round(restoreProgress)}%</span>
+                            </div>
+                            <div className="w-full h-2 bg-red-900/30">
+                                <motion.div
+                                    className="h-full bg-red-600"
+                                    style={{ width: `${restoreProgress}%` }}
+                                />
+                            </div>
+                            <div className="text-[10px] text-gray-600 text-center pt-2">
+                                DO NOT TURN OFF POWER
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 gap-4">
+                            <button
+                                onClick={handleReload}
+                                className="group py-4 border border-red-600/30 bg-red-600/10 hover:bg-red-600 hover:text-black transition-all flex flex-col items-center justify-center gap-2"
+                            >
+                                <RefreshCcw className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
+                                <span className="font-black uppercase tracking-widest text-[10px]">Re-Initialize</span>
+                            </button>
+
+                            <button
+                                onClick={() => navigate('/')}
+                                className="group py-4 border border-gray-800 bg-gray-900/50 hover:bg-white hover:text-black hover:border-white transition-all flex flex-col items-center justify-center gap-2"
+                            >
+                                <Home className="w-5 h-5" />
+                                <span className="font-black uppercase tracking-widest text-[10px]">Safe_Mode_Boot</span>
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
