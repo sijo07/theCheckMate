@@ -12,8 +12,8 @@ import {
 } from "react-router-dom";
 
 // Fix import case sensitivity for Vercel
-import PrivateRoute from "./components/privateRoute";
-import AdminRoute from "./pages/admin/adminRoute";
+import PrivateRoute from "./components/PrivateRoute";
+import AdminRoute from "./pages/admin/AdminRoute";
 
 // Lazy-loaded components
 const Login = lazy(() => import("./pages/auth/login.jsx"));
