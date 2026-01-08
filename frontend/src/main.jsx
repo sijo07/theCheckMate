@@ -104,63 +104,7 @@ const router = createBrowserRouter(
         }
       />
 
-      {/* New Feature Pages */}
-      <Route
-        path="threat-intelligence"
-        element={
-          <Suspense fallback={<div>Loading...</div>}>
-            <ThreatIntelligence />
-          </Suspense>
-        }
-      />
-      <Route
-        path="notifications"
-        element={
-          <Suspense fallback={<div>Loading...</div>}>
-            <Notifications />
-          </Suspense>
-        }
-      />
-      <Route
-        path="settings"
-        element={
-          <Suspense fallback={<div>Loading...</div>}>
-            <Settings />
-          </Suspense>
-        }
-      />
-      <Route
-        path="reports"
-        element={
-          <Suspense fallback={<div>Loading...</div>}>
-            <Reports />
-          </Suspense>
-        }
-      />
-      <Route
-        path="issues"
-        element={
-          <Suspense fallback={<div>Loading...</div>}>
-            <Issues />
-          </Suspense>
-        }
-      />
-      <Route
-        path="services"
-        element={
-          <Suspense fallback={<div>Loading...</div>}>
-            <Services />
-          </Suspense>
-        }
-      />
-      <Route
-        path="compliance"
-        element={
-          <Suspense fallback={<div>Loading...</div>}>
-            <Compliance />
-          </Suspense>
-        }
-      />
+
 
       {/* Private Routes */}
       <Route element={<PrivateRoute />}>
@@ -177,6 +121,62 @@ const router = createBrowserRouter(
           element={
             <Suspense fallback={<div>Loading...</div>}>
               <ChangePassword />
+            </Suspense>
+          }
+        />
+        <Route
+          path="threat-intelligence"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <ThreatIntelligence />
+            </Suspense>
+          }
+        />
+        <Route
+          path="notifications"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <Notifications />
+            </Suspense>
+          }
+        />
+        <Route
+          path="settings"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <Settings />
+            </Suspense>
+          }
+        />
+        <Route
+          path="reports"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <Reports />
+            </Suspense>
+          }
+        />
+        <Route
+          path="issues"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <Issues />
+            </Suspense>
+          }
+        />
+        <Route
+          path="services"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <Services />
+            </Suspense>
+          }
+        />
+        <Route
+          path="compliance"
+          element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <Compliance />
             </Suspense>
           }
         />
