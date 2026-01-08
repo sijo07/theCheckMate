@@ -11,7 +11,7 @@ import {
   createBrowserRouter,
 } from "react-router-dom";
 
-import PrivateRoute from "./components/PrivateRoute";
+import PrivateRoute from "./components/privateRoute";
 import AdminRoute from "./pages/admin/adminRoute";
 
 // Lazy-loaded components
