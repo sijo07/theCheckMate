@@ -1,5 +1,5 @@
 export const BASE_URL =
-  import.meta.env.VITE_BASE_URL || "http://localhost:5001";
+  import.meta.env.MODE === "production" ? "" : "http://localhost:5001";
 export const USERS_URL = `${BASE_URL}/api/users`;
 export const INCIDENTS_URL = `${BASE_URL}/api/incidents`;
 export const NOTIFICATIONS_URL = `${BASE_URL}/api/notifications`;
