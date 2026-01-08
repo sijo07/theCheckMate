@@ -1,22 +1,10 @@
 import http from "http";
-import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import cors from "cors";
-import cookieParser from "cookie-parser";
 import connectDB from "./config/db.js";
-import configureMiddleware from "./config/middleware.js";
-import errorHandler from "./middlewares/errorHandler.js";
-import rateLimiter from "./middlewares/rateLimiter.js";
-import userRoutes from "./routes/userRoutes.js";
-import incidentRoutes from "./routes/incidentRoutes.js";
-import notificationRoutes from "./routes/notificationRoutes.js";
-import reportRoutes from "./routes/reportRoutes.js";
-import solutionRoutes from "./routes/solutionRoutes.js";
-import issueRoutes from "./routes/issueRoutes.js";
-import serviceRoutes from "./routes/serviceRoutes.js";
 import initializeSocket from "./config/socket.js";
 import fetchIncidents from "./utils/fetchIncidents.js";
+import app from "./app.js";
 
 // ✅ Load environment variables
 dotenv.config();
@@ -26,43 +14,17 @@ connectDB()
   .then(() => {
     console.log("✅ MongoDB Connected. Starting server...");
 
-    // ✅ Initialize Express App
-    const app = express();
+    // ✅ Create HTTP Server
     const server = http.createServer(app);
 
     // ✅ Initialize WebSocket Server
     const io = initializeSocket(server);
 
-    // ✅ Middleware - Increase payload size limit for profile pictures
-    app.use(express.json({ limit: '50mb' }));
-    app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-    app.use(cookieParser());
-    app.use(cors({
-      origin: ["http://localhost:5173", "http://localhost:8098", "http://localhost:3000"],
-      credentials: true
-    }));
-    app.use(rateLimiter);
-
-
-    configureMiddleware(app);
-
-    // Make io instance available to routes
+    // Make io instance available to routes (via app.set, accessible in controllers)
     app.set("io", io);
-
-    // ✅ Routes
-    app.use("/api/users", userRoutes);
-    app.use("/api/incidents", incidentRoutes);
-    app.use("/api/notifications", notificationRoutes);
-    app.use("/api/reports", reportRoutes);
-    app.use("/api/solutions", solutionRoutes);
-    app.use("/api/issues", issueRoutes);
-    app.use("/api/services", serviceRoutes);
 
     // ✅ Start Fetching Incidents
     fetchIncidents(io);
-
-    // ✅ Global Error Handler
-    app.use(errorHandler);
 
     // 🚀 Start the Server
     const PORT = process.env.PORT || 5001;
