@@ -11,6 +11,7 @@ import {
   createBrowserRouter,
 } from "react-router-dom";
 
+// Fix import case sensitivity for Vercel
 import PrivateRoute from "./components/privateRoute";
 import AdminRoute from "./pages/admin/adminRoute";
 
