@@ -11,121 +11,133 @@ const THREAT_API_URL = "https://otx.alienvault.com/api/v1/pulses/subscribed";
 const API_KEY = process.env.THREAT_API_KEY;
 
 if (!API_KEY) {
-  console.error("❌ ERROR: THREAT_API_KEY is missing in .env file");
-  process.exit(1);
+  console.warn("⚠️ WARNING: THREAT_API_KEY is missing in .env file. Threat Intelligence may not work.");
 }
 
 // 🟢 Fetch and Store Cyber Incidents
 const fetchAndStoreIncidents = asyncHandler(async (io) => {
-  console.log("🔎 Fetching cyber incidents...");
-
-  const response = await axios.get(THREAT_API_URL, {
-    headers: { Authorization: `Bearer ${API_KEY}` },
-  });
-
-  if (!response.data || !response.data.results) {
-    console.error("❌ No data received from API");
+  if (!API_KEY) {
+    console.warn("⚠️ Skipping incident fetch: No API Key.");
     return;
   }
 
-  const incidents = response.data.results.map((incident) => {
-    const sourceLocation = extractCountry(incident);
-    const targetLocation = extractCountry(incident) || generateRandomLocation();
+  console.log("🔎 Fetching cyber incidents...");
 
-    const validTypes = [
-      "DDoS",
-      "Phishing",
-      "Malware",
-      "Ransomware",
-      "Unauthorized Access",
-    ];
-    const validSourceTypes = [
-      "Government",
-      "Hacker Group",
-      "Insider Threat",
-      "Cybercriminal",
-    ];
+  try {
+    const response = await axios.get(THREAT_API_URL, {
+      headers: { Authorization: `Bearer ${API_KEY}` },
+    });
 
-    const type = validTypes.includes(categorizeIncident(incident.tags || []))
-      ? categorizeIncident(incident.tags || [])
-      : generateRandomType(); // Random type if invalid or missing
+    if (!response.data || !response.data.results) {
+      console.error("❌ No data received from API");
+      return;
+    }
 
-    const sourceType = validSourceTypes.includes(incident.author_name || "")
-      ? incident.author_name || "Unknown"
-      : generateRandomSourceType(); // Random sourceType if invalid or missing
+    const incidents = response.data.results.map((incident) => {
+      const sourceLocation = extractCountry(incident);
+      const targetLocation = extractCountry(incident) || generateRandomLocation();
 
-    // Use relevant industry from tags or generate random industry if missing
-    const industry =
-      getIndustryFromTags(incident.tags || []) || generateRandomIndustry();
+      const validTypes = [
+        "DDoS",
+        "Phishing",
+        "Malware",
+        "Ransomware",
+        "Unauthorized Access",
+      ];
+      const validSourceTypes = [
+        "Government",
+        "Hacker Group",
+        "Insider Threat",
+        "Cybercriminal",
+      ];
 
-    return {
-      title: incident.name || "Unknown Title",
-      description: incident.description || "No description available",
-      date: new Date(incident.created) || new Date(),
-      type: type,
-      source: sourceLocation || generateRandomLocation(),
-      target: targetLocation,
-      industry: industry,
-      attackVector: getAttackVectorFromTags(incident.tags || []),
-      sourceType: sourceType,
-      severity: generateRandomSeverity(type),
-    };
-  });
+      const type = validTypes.includes(categorizeIncident(incident.tags || []))
+        ? categorizeIncident(incident.tags || [])
+        : generateRandomType();
 
-  console.log(`✅ Processing ${incidents.length} incidents...`);
+      const sourceType = validSourceTypes.includes(incident.author_name || "")
+        ? incident.author_name || "Unknown"
+        : generateRandomSourceType();
 
-  let incidentIndex = 0;
+      const industry =
+        getIndustryFromTags(incident.tags || []) || generateRandomIndustry();
 
-  // Use setInterval to insert one incident per second
-  const intervalId = setInterval(async () => {
-    if (incidentIndex < incidents.length) {
-      try {
-        const incident = incidents[incidentIndex];
-        // Insert one incident
-        const newIncident = await Incident.create(incident);
-        console.log(`✅ Incident inserted: ${incident.title}`);
+      return {
+        title: incident.name || "Unknown Title",
+        description: incident.description || "No description available",
+        date: new Date(incident.created) || new Date(),
+        type: type,
+        source: sourceLocation || generateRandomLocation(),
+        target: targetLocation,
+        industry: industry,
+        attackVector: getAttackVectorFromTags(incident.tags || []),
+        sourceType: sourceType,
+        severity: generateRandomSeverity(type),
+      };
+    });
 
-        io.emit("new-incident", [newIncident]); // Emit the inserted incident via WebSocket
+    console.log(`✅ Processing ${incidents.length} incidents...`);
 
-        // TRIGGER NOTIFICATION IF CRITICAL
-        if (incident.severity === "critical") {
-          const adminUsers = await User.find({ isAdmin: true });
+    // Bulk insert or loop without delay
+    // To avoid duplicates, we might want to check existence, but for now let's just create them.
+    // Or cleaner: Insert only new ones. But simple Create is fine for now as logic was simplistic before.
 
-          // Batch create notifications for performance
-          const notifications = adminUsers.map(admin => ({
+    const createdIncidents = await Incident.insertMany(incidents);
+    console.log(`✅ ${createdIncidents.length} Incidents inserted.`);
+
+    if (io) {
+      io.emit("new-incident", createdIncidents);
+    }
+
+    // Handle Critical Notifications
+    const criticalIncidents = createdIncidents.filter(i => i.severity === "critical");
+    if (criticalIncidents.length > 0) {
+      const adminUsers = await User.find({ isAdmin: true });
+      const notifications = [];
+
+      criticalIncidents.forEach(incident => {
+        adminUsers.forEach(admin => {
+          notifications.push({
             user: admin._id,
             type: 'critical',
             title: 'CRITICAL THREAT DETECTED',
-            message: `Active Threat: ${incident.type} targeting ${incident.target.country}. Immediate attention required.`,
-            relatedIncident: newIncident._id
-          }));
+            message: `Active Threat: ${incident.type} targeting ${incident.target.country}.`,
+            relatedIncident: incident._id
+          });
+        });
+      });
 
-          if (notifications.length > 0) {
-            await Notification.insertMany(notifications);
-            // Real-time emit to admins
-            adminUsers.forEach(admin => {
-              io.to(admin._id.toString()).emit("notification", {
-                title: 'CRITICAL THREAT DETECTED',
-                message: `Active Threat: ${incident.type}`,
-                type: 'critical'
-              });
+      if (notifications.length > 0) {
+        // Limit notifications to avoid spamming DB in one go if massive
+        const limitedNotifs = notifications.slice(0, 50);
+        await Notification.insertMany(limitedNotifs);
+
+        if (io) {
+          adminUsers.forEach(admin => {
+            io.to(admin._id.toString()).emit("notification", {
+              title: 'CRITICAL THREAT DETECTED',
+              message: `New Critical Threats Detected`,
+              type: 'critical'
             });
-          }
+          });
         }
-
-        incidentIndex++; // Move to the next incident
-      } catch (error) {
-        console.error("❌ Error inserting incident:", error.message);
       }
-    } else {
-      clearInterval(intervalId); // Stop the interval once all incidents are inserted
-      console.log("✅ All incidents have been inserted.");
     }
-  }, 1000); // Insert one incident every 1000ms (1 second)
+
+  } catch (error) {
+    console.error("❌ Error fetching/inserting incidents:", error.message);
+  }
 });
 
 // ✅ Get All Incidents (Active Only)
 const getAllIncidents = asyncHandler(async (req, res) => {
+  // On-demand fetch if empty
+  const count = await Incident.countDocuments();
+  if (count === 0) {
+    console.log("Empty DB detected, triggering initial fetch...");
+    await fetchAndStoreIncidents(req.app.get("io"));
+  }
+
   const incidents = await Incident.find({ status: { $ne: "resolved" } }).sort({ date: -1 });
   res.json(incidents);
 });
