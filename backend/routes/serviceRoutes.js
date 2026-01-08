@@ -19,13 +19,14 @@ const router = express.Router();
 
 // Service routes
 router.route("/").get(getServices).post(authenticate, authorizeAdmin, createService);
-router.route("/:id").get(getServiceById).put(authenticate, authorizeAdmin, updateService).delete(authenticate, authorizeAdmin, deleteService);
-
 // Service request routes
 router.route("/requests").get(authenticate, getServiceRequests).post(authenticate, createServiceRequest);
 router.route("/requests/pending").get(authenticate, authorizeAdmin, getPendingAuthorizations);
 router.route("/requests/:id").get(authenticate, getServiceRequestById).put(authenticate, updateServiceRequest);
 router.route("/requests/:id/notes").post(authenticate, addNoteToRequest);
 router.route("/requests/:id/complete").put(authenticate, authorizeAdmin, completeServiceRequest);
+
+// Service routes (this must be last to avoid conflict with /requests)
+router.route("/:id").get(getServiceById).put(authenticate, authorizeAdmin, updateService).delete(authenticate, authorizeAdmin, deleteService);
 
 export default router;
