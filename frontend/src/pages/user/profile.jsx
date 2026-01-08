@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
-import Loader from "../../components/loader";
+import Loader from "../../components/Loader";
 import { setCredentials } from "../../redux/features/authSlice";
 import { toast } from "react-toastify";
 import { useUpdateProfileMutation } from "../../redux/api/userApiSlice";
