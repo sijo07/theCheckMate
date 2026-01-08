@@ -6,7 +6,7 @@ import { setCredentials } from "../../redux/features/authSlice";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { Shield, Mail, Lock, Eye, EyeOff, Terminal, AlertTriangle } from "lucide-react";
-import Loader from "../../components/loader";
+import Loader from "../../components/Loader";
 
 const Login = () => {
   const [email, setEmail] = useState("");

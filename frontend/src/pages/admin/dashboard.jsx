@@ -37,7 +37,7 @@ import {
   useGetTopTargetedCountriesQuery,
   useGetTopTargetedIndustriesQuery,
 } from "../../redux/api/incidentApiSlice";
-import Loader from "../../components/loader";
+import Loader from "../../components/Loader";
 
 // Register ChartJS
 ChartJS.register(

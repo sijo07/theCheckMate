@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import { setCredentials } from "../../redux/features/authSlice";
 import { useRegisterMutation } from "../../redux/api/userApiSlice";
-import Loader from "../../components/loader";
+import Loader from "../../components/Loader";
 import { toast } from "react-toastify";
 import { Shield, User, Mail, Phone, Lock, Upload, Eye, EyeOff, Terminal } from "lucide-react";
 
