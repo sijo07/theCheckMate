@@ -38,9 +38,9 @@ const mapStyles = `
   }
 
   .map-frame {
-    background: #020202;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: inset 0 0 150px rgba(0, 0, 0, 1);
+    background: #0a0a0f;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 0 150px rgba(0, 0, 0, 0.7);
     position: relative;
     overflow: hidden;
   }
@@ -49,16 +49,16 @@ const mapStyles = `
     position: absolute;
     z-index: 1000;
     pointer-events: none;
-    background: rgba(4, 4, 6, 0.95);
+    background: rgba(20, 20, 30, 0.95);
     backdrop-filter: blur(12px);
     border-left: 3px solid #ef4444;
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     padding: 14px;
     font-family: 'Inter', monospace;
     min-width: 240px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(239, 68, 68, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(239, 68, 68, 0.2);
   }
 
   .tooltip-label {
@@ -81,20 +81,20 @@ const mapStyles = `
 
   .cyber-grid {
     background-image: 
-      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
     background-size: 50px 50px;
     position: absolute;
     inset: 0;
     pointer-events: none;
     z-index: 1;
-    opacity: 0.4;
+    opacity: 0.7;
   }
 
   .hud-box {
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(10, 10, 15, 0.8);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     padding: 12px 18px;
     pointer-events: auto;
   }
@@ -123,11 +123,11 @@ const mapStyles = `
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%);
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(255, 255, 255, 0.1) 50%);
     background-size: 100% 4px;
     pointer-events: none;
     z-index: 40;
-    opacity: 0.3;
+    opacity: 0.5;
   }
 `;
 
@@ -329,19 +329,19 @@ const ThreadMap = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#020202] text-white pt-10 lg:pt-24 px-4 sm:px-6 lg:px-8 pb-12 font-mono relative overflow-hidden selection:bg-red-500 selection:text-white">
+    <div className="min-h-screen bg-[#0a0a0f] text-white pt-10 lg:pt-24 px-4 sm:px-6 lg:px-8 pb-12 font-mono relative overflow-hidden selection:bg-red-500 selection:text-white">
       <style>{mapStyles}</style>
 
       {/* Background Layers */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="cyber-grid" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(220,38,38,0.03)_0%,transparent_70%)]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(220,38,38,0.06)_0%,transparent_70%)]" />
       </div>
 
       <div className="max-w-[1800px] mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-4 gap-8 h-full">
 
         {/* Sidebar (Tactical Ticker) */}
-        <div className="lg:col-span-1 h-[82vh] flex flex-col bg-[#050505]/90 backdrop-blur-xl border border-white/10 relative overflow-hidden shadow-2xl">
+        <div className="lg:col-span-1 h-[82vh] flex flex-col bg-[#0a0a0f]/90 backdrop-blur-xl border border-white/15 relative overflow-hidden shadow-2xl">
           <div className="p-5 border-b border-white/10 bg-gradient-to-r from-red-900/10 to-transparent flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse" />
@@ -551,7 +551,7 @@ const ThreadMap = () => {
               </filter>
               {/* Digital Geography Pattern */}
               <pattern id="dotPattern" x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse">
-                <circle cx="1" cy="1" r="0.5" fill="#15151a" />
+                <circle cx="1" cy="1" r="0.5" fill="#333340" />
               </pattern>
             </defs>
 
@@ -560,8 +560,8 @@ const ThreadMap = () => {
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill={hoveredCountry === geo.properties.name ? "rgba(31, 31, 34, 0.8)" : "url(#dotPattern)"}
-                  stroke={hoveredCountry === geo.properties.name ? "rgba(239, 68, 68, 0.4)" : "rgba(255, 255, 255, 0.05)"}
+                  fill={hoveredCountry === geo.properties.name ? "rgba(60, 60, 70, 0.8)" : "url(#dotPattern)"}
+                  stroke={hoveredCountry === geo.properties.name ? "rgba(239, 68, 68, 0.6)" : "rgba(255, 255, 255, 0.15)"}
                   strokeWidth={0.5}
                   onMouseEnter={() => setHoveredCountry(geo.properties.name)}
                   onMouseLeave={() => setHoveredCountry(null)}
