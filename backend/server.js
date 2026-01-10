@@ -28,7 +28,11 @@ connectDB()
 
     // 🚀 Start the Server
     const PORT = process.env.PORT || 5001;
-    server.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    server.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
+      console.log(`☁️ Running on Render: ${!!process.env.RENDER}`);
+    });
   })
   .catch((error) => {
     console.error("❌ MongoDB Connection Failed:", error.message);
