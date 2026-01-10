@@ -289,7 +289,7 @@ const Register = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         autoComplete="off"
-                        className="w-full pl-12 pr-12 py-3 bg-[#111] border border-red-900/30 text-white text-xs font-bold uppercase tracking-widest placeholder-gray-700 focus:outline-none focus:border-red-500 transition-colors"
+                        className="w-full pl-12 pr-12 py-3 bg-[#111] border border-red-900/30 text-white text-xs font-bold tracking-widest placeholder-gray-700 focus:outline-none focus:border-red-500 transition-colors"
                       />
                       <button
                         type="button"
@@ -315,7 +315,7 @@ const Register = () => {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
                         autoComplete="off"
-                        className="w-full pl-12 pr-12 py-3 bg-[#111] border border-red-900/30 text-white text-xs font-bold uppercase tracking-widest placeholder-gray-700 focus:outline-none focus:border-red-500 transition-colors"
+                        className="w-full pl-12 pr-12 py-3 bg-[#111] border border-red-900/30 text-white text-xs font-bold tracking-widest placeholder-gray-700 focus:outline-none focus:border-red-500 transition-colors"
                       />
                       <button
                         type="button"

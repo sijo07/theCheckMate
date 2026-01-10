@@ -28,6 +28,7 @@ app.use(cors({
         "http://localhost:8098",
         "http://localhost:8005",
         "http://localhost:3000",
+        "https://thecheckmate.onrender.com",
         process.env.CLIENT_URL, // Allow Vercel frontend
         process.env.VERCEL_URL // Fallback
     ].filter(Boolean), // Remove undefined/null
