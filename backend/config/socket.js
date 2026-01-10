@@ -3,7 +3,14 @@ import { Server } from "socket.io";
 const initializeSocket = (server) => {
   const io = new Server(server, {
     cors: {
-      origin: ["http://localhost:5173", "http://localhost:8098", "http://localhost:3000"],
+      origin: [
+        "http://localhost:5173",
+        "http://localhost:8098",
+        "http://localhost:8005",
+        "http://localhost:3000",
+        "https://thecheckmate.onrender.com",
+        process.env.CLIENT_URL
+      ].filter(Boolean),
       credentials: true
     },
   });
