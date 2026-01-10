@@ -18,6 +18,9 @@ dotenv.config();
 
 const app = express();
 
+// Trust proxy is required for secure cookies behind a proxy (like Render/Vercel)
+app.set("trust proxy", 1);
+
 // Middleware - Increase payload size limit
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
