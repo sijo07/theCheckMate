@@ -26,6 +26,7 @@ app.use(cors({
     origin: [
         "http://localhost:5173",
         "http://localhost:8098",
+        "http://localhost:8005",
         "http://localhost:3000",
         process.env.CLIENT_URL, // Allow Vercel frontend
         process.env.VERCEL_URL // Fallback
@@ -44,6 +45,11 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/solutions", solutionRoutes);
 app.use("/api/issues", issueRoutes);
 app.use("/api/services", serviceRoutes);
+
+// Root Route
+app.get("/", (req, res) => {
+    res.send("API is running...");
+});
 
 // Global Error Handler
 app.use(errorHandler);
