@@ -82,7 +82,7 @@ const createUser = asyncHandler(async (req, res) => {
 
   try {
     await newUser.save();
-    createToken(res, newUser._id);
+    const token = createToken(res, newUser._id);
 
     res.status(201).json({
       _id: newUser._id,
@@ -91,6 +91,7 @@ const createUser = asyncHandler(async (req, res) => {
       email: newUser.email,
       isAdmin: newUser.isAdmin,
       profilePic,
+      token,
     });
   } catch (error) {
     console.error("Error creating user:", error.message);
@@ -134,7 +135,7 @@ const loginUser = asyncHandler(async (req, res) => {
     return;
   }
 
-  createToken(res, existingUser._id);
+  const token = createToken(res, existingUser._id);
 
   res.status(200).json({
     _id: existingUser._id,
@@ -143,6 +144,7 @@ const loginUser = asyncHandler(async (req, res) => {
     email: existingUser.email,
     profilePic: existingUser.profilePic,
     isAdmin: existingUser.isAdmin,
+    token,
   });
 });
 

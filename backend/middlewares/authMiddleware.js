@@ -5,7 +5,12 @@ import asyncHandler from "./asyncHandler.js";
 const authenticate = asyncHandler(async (req, res, next) => {
   console.log("🔍 Received Cookies:", req.cookies); // Debugging
 
-  const token = req.cookies?.jwt; // Safely access jwt
+  let token = req.cookies?.jwt;
+
+  // Fallback to Bearer token if cookie is not present
+  if (!token && req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+    token = req.headers.authorization.split(" ")[1];
+  }
   if (!token) {
     return res.status(401).json({ message: "Not authorized, no token." });
   }
@@ -22,7 +27,7 @@ const authenticate = asyncHandler(async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error("🔴 Token verification failed:", error.message); 
+    console.error("🔴 Token verification failed:", error.message);
     return res.status(401).json({ message: "Not authorized, token invalid." });
   }
 });
