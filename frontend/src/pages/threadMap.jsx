@@ -329,7 +329,7 @@ const ThreadMap = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white pt-10 lg:pt-24 px-4 sm:px-6 lg:px-8 pb-12 font-mono relative overflow-hidden selection:bg-red-500 selection:text-white">
+    <div className="min-h-screen bg-[#0a0a0f] text-white pt-10 lg:pt-24 px-4 sm:px-6 lg:px-8 pb-12 font-mono relative overflow-y-auto lg:overflow-hidden selection:bg-red-500 selection:text-white">
       <style>{mapStyles}</style>
 
       {/* Background Layers */}
@@ -341,7 +341,7 @@ const ThreadMap = () => {
       <div className="max-w-[1800px] mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-4 gap-8 h-full">
 
         {/* Sidebar (Tactical Ticker) */}
-        <div className="lg:col-span-1 h-[82vh] flex flex-col bg-[#0a0a0f]/90 backdrop-blur-xl border border-white/15 relative overflow-hidden shadow-2xl">
+        <div className="lg:col-span-1 h-[50vh] lg:h-[82vh] flex flex-col bg-[#0a0a0f]/90 backdrop-blur-xl border border-white/15 relative overflow-hidden shadow-2xl">
           <div className="p-5 border-b border-white/10 bg-gradient-to-r from-red-900/10 to-transparent flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse" />
@@ -442,7 +442,7 @@ const ThreadMap = () => {
         </div>
 
         {/* Map Display */}
-        <div className="lg:col-span-3 h-[82vh] map-frame relative" onMouseMove={handleMouseMove}>
+        <div className="lg:col-span-3 h-[50vh] lg:h-[82vh] map-frame relative" onMouseMove={handleMouseMove}>
 
           {/* Tactical Tooltip */}
           <AnimatePresence>

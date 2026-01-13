@@ -151,15 +151,9 @@ const Home = () => {
 
           <section ref={liveMapRef} className="py-10 px-4 bg-black/40 border-y border-white/05 relative overflow-hidden">
             <div className="max-w-7xl mx-auto">
-              <div className="mb-6 text-center max-w-3xl mx-auto">
-                <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-2">
-                  Live Global <span className="text-red-500">Sentinel</span>
-                </h2>
-                <p className="text-gray-500 font-medium uppercase tracking-widest text-xs">
-                  Real-time attack trace and neutralization dashboard.
-                </p>
+              <div className="mb-6 max-w-7xl mx-auto">
+                <LiveMap />
               </div>
-              <LiveMap />
             </div>
           </section>
 
